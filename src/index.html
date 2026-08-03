@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' data:; audio-src 'self' data:;">
+  <title>JTAC Private Sheet</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <!-- ======= Kopfzeile ======= -->
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">JT</span>
+      <div class="brand-text">
+        <span class="brand-title">JTAC&nbsp;PRIVATE&nbsp;SHEET</span>
+        <span class="brand-sub" id="brand-sub">CGF 160th SOAR · v0.1</span>
+      </div>
+    </div>
+
+    <div class="topbar-right">
+      <label class="field-inline">
+        <span class="field-label">Profil</span>
+        <select id="profile-select" class="select"></select>
+      </label>
+      <button id="theme-toggle" class="btn btn-ghost" title="Design wechseln (dunkel/hell)">◐</button>
+    </div>
+  </header>
+
+  <!-- ======= Layout ======= -->
+  <div class="layout">
+
+    <!-- Navigation -->
+    <nav class="sidebar" id="sidebar">
+      <div class="nav-group">
+        <a href="#/home"      class="nav-item" data-route="home"><span class="nav-ico">▦</span><span>Start</span></a>
+        <a href="#/cas"       class="nav-item" data-route="cas"><span class="nav-ico">🎯</span><span>9-Line&nbsp;CAS</span></a>
+        <a href="#/medevac"   class="nav-item" data-route="medevac"><span class="nav-ico">✚</span><span>9-Line&nbsp;MEDEVAC</span></a>
+        <a href="#/grid"      class="nav-item" data-route="grid"><span class="nav-ico">⌖</span><span>Grid-Rechner</span></a>
+        <a href="#/timer"     class="nav-item" data-route="timer"><span class="nav-ico">⏱</span><span>Timer&nbsp;/&nbsp;TOT</span></a>
+        <a href="#/profile"   class="nav-item" data-route="profile"><span class="nav-ico">☎</span><span>Profile&nbsp;/&nbsp;Netze</span></a>
+        <a href="#/refs"      class="nav-item" data-route="refs"><span class="nav-ico">▤</span><span>Referenzen</span></a>
+      </div>
+      <div class="nav-foot">
+        <button id="copy-all-btn" class="btn btn-block" title="Gesamten Funkspruch der aktiven Ansicht kopieren">⧉ Funkspruch kopieren</button>
+        <p class="nav-note">Nur du – alles bleibt lokal.</p>
+      </div>
+    </nav>
+
+    <!-- Inhalt -->
+    <main class="content">
+
+      <!-- ===== START ===== -->
+      <section class="view" id="view-home">
+        <h1>Start</h1>
+        <p class="lead">Dein JTAC-Büro für Arma&nbsp;3. Alles läuft lokal auf diesem Laptop – kein Server, kein Internet nötig.</p>
+
+        <div class="card-grid">
+          <a class="card" href="#/cas">
+            <div class="card-ico">🎯</div>
+            <div class="card-title">9-Line CAS</div>
+            <div class="card-text">Close Air Support – Briefing in 9 Zeilen aufbauen, prüfen und kopieren.</div>
+          </a>
+          <a class="card" href="#/medevac">
+            <div class="card-ico">✚</div>
+            <div class="card-title">9-Line MEDEVAC</div>
+            <div class="card-text">Medevac-Briefing nach NATO-Standard inkl. Patienten-Prioritäten.</div>
+          </a>
+          <a class="card" href="#/grid">
+            <div class="card-ico">⌖</div>
+            <div class="card-title">Grid-Rechner</div>
+            <div class="card-text">MGRS ↔ Koordinaten, Distanz &amp; Peilung zwischen zwei Punkten.</div>
+          </a>
+          <a class="card" href="#/timer">
+            <div class="card-ico">⏱</div>
+            <div class="card-title">Timer / TOT</div>
+            <div class="card-text">Time-on-Target-Countdown mit Lase-Fenster und Alarm.</div>
+          </a>
+          <a class="card" href="#/profile">
+            <div class="card-ico">☎</div>
+            <div class="card-title">Profile &amp; Netze</div>
+            <div class="card-text">Feste Profile: Callsigns, Frequenzen, Laser-Codes, Karten-Voreinstellung.</div>
+          </a>
+          <a class="card" href="#/refs">
+            <div class="card-ico">▤</div>
+            <div class="card-title">Referenzen</div>
+            <div class="card-text">Abkürzungen, Brevity, Verfahren – dein digitales Cheatsheet.</div>
+          </a>
+        </div>
+
+        <div class="panel">
+          <h2>Kurz &amp; knapp</h2>
+          <ul class="checklist">
+            <li><b>Profil wählen</b> (oben rechts) – Callsigns &amp; Frequenzen werden automatisch in die Formulare übernommen.</li>
+            <li><b>9-Line ausfüllen</b> – Live-Vorschau unten, per <b>⧉ Funkspruch kopieren</b> in die Zwischenablage.</li>
+            <li><b>Grid-Rechner</b> – MGRS von ACE oder Arma-Grid eingeben, Distanz &amp; Peilung berechnen.</li>
+            <li><b>Timer</b> – TOT setzen, Lase-Fenster startet automatisch 30&nbsp;s vor dem Zielzeitpunkt.</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- ===== 9-LINE CAS ===== -->
+      <section class="view" id="view-cas">
+        <div class="view-head">
+          <div>
+            <h1>9-Line CAS</h1>
+            <p class="lead">Close Air Support Briefing. Standard-NATO-Format – wird bei Erhalt deiner PDFs an deine Unit angepasst.</p>
+          </div>
+          <button class="btn" data-copy-target="cas-preview">⧉ Kopieren</button>
+        </div>
+
+        <div class="grid-2">
+          <div class="panel">
+            <h2>Briefing</h2>
+            <div id="cas-form" class="form"></div>
+          </div>
+          <div class="panel">
+            <h2>Funkspruch-Vorschau</h2>
+            <pre id="cas-preview" class="preview" data-blank="Zeilen erscheinen hier, sobald du sie ausfüllst."></pre>
+            <div class="hint" id="cas-hint"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== 9-LINE MEDEVAC ===== -->
+      <section class="view" id="view-medevac">
+        <div class="view-head">
+          <div>
+            <h1>9-Line MEDEVAC</h1>
+            <p class="lead">Medevac-Anforderung nach NATO-Standard (aktualisiert mit deinen PDFs).</p>
+          </div>
+          <button class="btn" data-copy-target="medevac-preview">⧉ Kopieren</button>
+        </div>
+
+        <div class="grid-2">
+          <div class="panel">
+            <h2>Briefing</h2>
+            <div id="medevac-form" class="form"></div>
+          </div>
+          <div class="panel">
+            <h2>Funkspruch-Vorschau</h2>
+            <pre id="medevac-preview" class="preview" data-blank="Zeilen erscheinen hier, sobald du sie ausfüllst."></pre>
+            <div class="hint" id="medevac-hint"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== GRID-RECHNER ===== -->
+      <section class="view" id="view-grid">
+        <h1>Grid-Rechner</h1>
+        <p class="lead">MGRS (ACE) ↔ Lat/Long · Distanz &amp; Peilung zwischen zwei Punkten · Arma-Grid-Hilfe.</p>
+
+        <div class="grid-2">
+          <div class="panel">
+            <h2>Punkt A → Punkt B</h2>
+            <div class="form">
+              <div class="field">
+                <label class="field-label" for="grid-a">Punkt A (Grid / MGRS / Koordinaten)</label>
+                <input id="grid-a" class="input" type="text" placeholder="z. B. 35S VA 12345 67890  oder  123 456  oder  39.5123, 24.8901" spellcheck="false">
+              </div>
+              <div class="field">
+                <label class="field-label" for="grid-b">Punkt B (Grid / MGRS / Koordinaten)</label>
+                <input id="grid-b" class="input" type="text" placeholder="z. B. 35S VA 54321 09876" spellcheck="false">
+              </div>
+              <div class="field-row">
+                <div class="field">
+                  <label class="field-label" for="grid-zone">Karten-Voreinstellung (Zone)</label>
+                  <select id="grid-zone" class="select"></select>
+                </div>
+                <div class="field">
+                  <label class="field-label" for="grid-format">Ausgabe-Präzision</label>
+                  <select id="grid-format" class="select">
+                    <option value="8">8-stellig (10 m)</option>
+                    <option value="6" selected>6-stellig (100 m)</option>
+                    <option value="4">4-stellig (1 km)</option>
+                    <option value="10">10-stellig (1 m)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div class="result-box" id="grid-result">
+              <div class="result-row"><span>Distanz (gerade Linie)</span><b id="gr-dist">–</b></div>
+              <div class="result-row"><span>Peilung A → B (Grid-Mil)</span><b id="gr-bearing-mil">–</b></div>
+              <div class="result-row"><span>Peilung A → B (Grad)</span><b id="gr-bearing-deg">–</b></div>
+              <div class="result-row"><span>Format A</span><b id="gr-format-a">–</b></div>
+              <div class="result-row"><span>Format B</span><b id="gr-format-b">–</b></div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <h2>Punkt-Umrechnung</h2>
+            <div class="form">
+              <div class="field">
+                <label class="field-label" for="grid-single">Beliebiger Punkt</label>
+                <input id="grid-single" class="input" type="text" placeholder="MGRS oder Lat/Long (z. B. 35S VA 12345 67890 / 39.5123, 24.8901)" spellcheck="false">
+              </div>
+            </div>
+            <div class="result-box" id="grid-single-result">
+              <div class="result-row"><span>MGRS</span><b id="gs-mgrs">–</b></div>
+              <div class="result-row"><span>Lat/Long (dezimal)</span><b id="gs-latlon">–</b></div>
+              <div class="result-row"><span>Lat/Long (Grad/Min/Sek)</span><b id="gs-dms">–</b></div>
+              <div class="result-row"><span>UTM</span><b id="gs-utm">–</b></div>
+            </div>
+            <div class="hint">
+              <b>Tipp:</b> 6-stellige Arma-Grids (z.&nbsp;B. <code>123 456</code>) werden über die ausgewählte Karten-Voreinstellung einer Zone zugeordnet. MGRS mit kompletter Zone ist immer am genauesten.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== TIMER ===== -->
+      <section class="view" id="view-timer">
+        <h1>Timer / TOT</h1>
+        <p class="lead">Time-on-Target zählt runter, das Lase-Fenster läuft automatisch mit.</p>
+
+        <div class="timer-layout">
+          <div class="panel timer-panel">
+            <div class="timer-display" id="timer-display">00:00:00</div>
+            <div class="timer-state" id="timer-state">Bereit</div>
+            <div class="form timer-form">
+              <div class="field">
+                <label class="field-label" for="timer-tot">TOT (Uhrzeit HH:MM:SS) oder Countdown (MM:SS)</label>
+                <input id="timer-tot" class="input" type="text" placeholder="z. B. 21:45:00 oder 05:00" spellcheck="false">
+              </div>
+              <div class="field-row">
+                <button id="timer-start" class="btn btn-primary">Start</button>
+                <button id="timer-stop" class="btn">Stop</button>
+                <button id="timer-reset" class="btn btn-ghost">Reset</button>
+              </div>
+            </div>
+          </div>
+          <div class="panel">
+            <h2>Lase-Fenster</h2>
+            <ul class="checklist">
+              <li id="lase-t30"><b>T–30 s:</b> Lase an – Ziel anpeilen</li>
+              <li id="lase-t10"><b>T–10 s:</b> „Lase on" funken</li>
+              <li id="lase-t0"><b>T–0 s:</b> Waffeneinschlag</li>
+              <li id="lase-t30a"><b>T+30 s:</b> Lase aus – „Lase off"</li>
+            </ul>
+            <div class="hint">Alarm: kurzer Piepton bei T–30, T–10, T–0 und T+30 (Ton über Lautsprecher).</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== PROFILE / NETZE ===== -->
+      <section class="view" id="view-profile">
+        <h1>Profile &amp; Netze</h1>
+        <p class="lead">Feste Profile (max. 3) mit Callsigns, Frequenzen und Karten-Voreinstellung. Das aktive Profil wird in alle Formulare übernommen.</p>
+
+        <div id="profile-list" class="profile-grid"></div>
+        <div class="panel">
+          <h2>Aktives Profil bearbeiten</h2>
+          <div class="form">
+            <div class="field-row">
+              <div class="field">
+                <label class="field-label" for="pf-name">Name</label>
+                <input id="pf-name" class="input" type="text">
+              </div>
+              <div class="field">
+                <label class="field-label" for="pf-jtac">JTAC-Callsign</label>
+                <input id="pf-jtac" class="input mono" type="text" placeholder="z. B. LONGBOW 1">
+              </div>
+              <div class="field">
+                <label class="field-label" for="pf-cas">CAS-Callsign</label>
+                <input id="pf-cas" class="input mono" type="text" placeholder="z. B. HAVOC 1-1">
+              </div>
+              <div class="field">
+                <label class="field-label" for="pf-med">MEDEVAC-Callsign</label>
+                <input id="pf-med" class="input mono" type="text" placeholder="z. B. DUSTOFF 1">
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label class="field-label" for="pf-freqcas">Frequenz CAS (MHz)</label>
+                <input id="pf-freqcas" class="input mono" type="text" placeholder="z. B. 36.50">
+              </div>
+              <div class="field">
+                <label class="field-label" for="pf-freqmed">Frequenz MEDEVAC (MHz)</label>
+                <input id="pf-freqmed" class="input mono" type="text" placeholder="z. B. 38.00">
+              </div>
+              <div class="field">
+                <label class="field-label" for="pf-laser">Laser-Code</label>
+                <input id="pf-laser" class="input mono" type="text" placeholder="z. B. 1688">
+              </div>
+              <div class="field">
+                <label class="field-label" for="pf-map">Karten-Voreinstellung</label>
+                <select id="pf-map" class="select"></select>
+              </div>
+            </div>
+            <div class="field">
+              <label class="field-label" for="pf-notes">Notizen</label>
+              <textarea id="pf-notes" class="input textarea" rows="4" placeholder="Einsatznotizen, SOPs, Merkhilfen …"></textarea>
+            </div>
+            <div class="field-row">
+              <button id="profile-save" class="btn btn-primary">Profil speichern</button>
+              <button id="profile-reset" class="btn btn-ghost">Auf Standard zurücksetzen</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== REFERENZEN ===== -->
+      <section class="view" id="view-refs">
+        <h1>Referenzen</h1>
+        <p class="lead">Abkürzungen &amp; Brevity – wird aus deinen PDFs (24th&nbsp;STS, TFW&nbsp;18E, Ghost, ATG) befüllt.</p>
+        <div id="refs-root" class="refs-grid"></div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast" class="toast" role="status"></div>
+
+  <script src="js/lib/mgrs.js"></script>
+  <script src="js/data/refdata.js"></script>
+  <script src="js/modules/grid.js"></script>
+  <script src="js/modules/forms.js"></script>
+  <script src="js/modules/timer.js"></script>
+  <script src="js/modules/profiles.js"></script>
+  <script src="js/modules/refs.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

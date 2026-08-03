@@ -1,0 +1,20 @@
+{
+  "name": "jtac-private-sheet",
+  "version": "0.1.0",
+  "description": "JTAC Werkzeug für Arma 3 – private Desktop-App",
+  "main": "main.js",
+  "author": "Private",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "test": "node test/logic.test.js && node test/smoke.test.js",
+    "pack:win": "electron-packager . \"JTAC-Private-Sheet\" --platform=win32 --arch=x64 --out=build --overwrite --prune=true --ignore=\"^/build\" --ignore=\"^/test\" --app-version=0.1.0"
+  },
+  "devDependencies": {
+    "electron": "^43.2.0",
+    "electron-packager": "^17.1.2",
+    "jsdom": "^30.0.1",
+    "mgrs": "^2.2.0"
+  }
+}
