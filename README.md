@@ -13,13 +13,13 @@ keine Anmeldung, kein Server, keine Datenübertragung.
 
 | Modul | Was es kann |
 |---|---|
-| **Start (Dashboard)** | Einsatz-Zentrale: aktive Mission, dein CAS-Airframe mit Bewaffnung, große Schnellzugriff-Buttons (Fokus: 5-Line & HLZ) |
+| **Start (Dashboard)** | Einsatz-Zentrale: aktive Mission, dein CAS-Airframe mit Bewaffnung, große Schnellzugriff-Buttons (Fokus: 5-Line & HLZ, Briefing Area) |
 | **📋 Mission** | Jede Mission extra anlegen (Name + Karte). Sie sammelt: **Funkspruch-Log** (alle gesendeten Briefs mit Zeitstempel), **BDA-History**, **Koordinaten-Favoriten** (HLZ/IP/OP → per Klick in den Brief), **Pre-Mission-Checkliste**, **„Ich bin hier"** (Distanz/Peilung zu allen Favoriten). Export/Import als JSON. |
 | **🚁 5-Line CAS (Rotary)** | Dein Standard-Brief. Felder: Game Plan (Type/MOA/Anzahl/Ordnance), Friendly, Target Grid, Beschreibung/Mark, Remarks (LTL/FAH/Danger Close). |
 | **🛬 HLZ Brief** | Landeplatz-Briefing: Grid, Markierung, Hindernisse, Friendly/Enemy SITREP, Security (Green/Yellow/Red). |
 | **🎯 9-Line CAS** | Fixed-Wing-Brief im Original-Format eurer Unit, Pflicht-Readbacks rot markiert. |
 | **✚ MEDEVAC** | Prioritäten A–E, Ausrüstung, Litter/Ambulatory, Security, Markierung, Nationalität, CBRN. |
-| **➕ Weitere Briefs** | SOF Gunship, RPAS (UAV), ALZ, Airdrop, Call for Fire, CCA 5-Line. |
+| **🗂 Briefing Area** | Eigener Bereich für die weniger häufigen Briefings aus dem ATG Reference Sheet &amp; Ghost's Cheatsheet: **SOF Gunship, RPAS (UAV), ALZ, Airdrop, Call for Fire, CCA 5-Line** – alles mit Satz-Output, Senden &amp; Log. |
 | **➤ 12-Schritte-CAS** | Geführter Ablauf: Check-in → TEFACHR → Game Plan → Brief → Remarks → BDA, als durchgehender Funkspruch. |
 | **⌖ Grid-Rechner** | MGRS ↔ Lat/Long, Arma-Grids, Distanz & Peilung in Grad + Mil. „📌 In Brief einfügen" überträgt das Ergebnis direkt in die 5-/9-Line. |
 | **⏱ Timer / TOT** | Countdown mit automatischem Lase-Fenster (T–30 … T+30) + Piep-Alarmen. |

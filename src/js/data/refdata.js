@@ -841,19 +841,26 @@ REF.findAirframe = function (cs) {
   }) || null;
 };
 
-// Format-Helfer: Liste aller Brief-Formate
-REF.briefFormats = [
-  { id: 'cas5',    label: '5-Line (Rotary)' },
-  { id: 'hlz',     label: 'HLZ' },
-  { id: 'cas9',    label: '9-Line CAS' },
-  { id: 'medevac', label: 'MEDEVAC' },
-  { id: 'gunship', label: 'Gunship' },
+// Format-Helfer: Brief-Formate in zwei Gruppen
+// Haupt-Formate (Kern) – im Haupt-Briefs-Tab
+REF.briefFormatsMain = [
+  { id: 'cas5',    label: '🚁 5-Line (Rotary)' },
+  { id: 'hlz',     label: '🛬 HLZ' },
+  { id: 'cas9',    label: '🎯 9-Line CAS' },
+  { id: 'medevac', label: '✚ MEDEVAC' }
+];
+
+// Weitere Formate (Briefing Area) – aus ATG / Ghost's Cheatsheet
+REF.briefFormatsExtra = [
+  { id: 'gunship', label: 'Gunship (AC-130)' },
   { id: 'rpas',    label: 'RPAS (UAV)' },
   { id: 'alz',     label: 'ALZ' },
   { id: 'airdrop', label: 'Airdrop' },
   { id: 'cff',     label: 'Call for Fire' },
   { id: 'cca',     label: 'CCA 5-Line' }
 ];
+
+REF.briefFormats = [...REF.briefFormatsMain, ...REF.briefFormatsExtra];
 
 if (typeof window !== 'undefined') { window.REF = REF; }
 if (typeof module !== 'undefined' && module.exports) { module.exports = REF; }

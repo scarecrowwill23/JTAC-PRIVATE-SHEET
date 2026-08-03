@@ -14,7 +14,7 @@
       <span class="brand-mark">JT</span>
       <div class="brand-text">
         <span class="brand-title">JTAC&nbsp;HELPER</span>
-        <span class="brand-sub" id="brand-sub">CGF 160th SOAR · v0.6</span>
+        <span class="brand-sub" id="brand-sub">CGF 160th SOAR · v0.7</span>
       </div>
     </div>
 
@@ -44,6 +44,7 @@
         <a href="#/briefs"    class="nav-item" data-route="briefs" data-tab="hlz"><span class="nav-ico">🛬</span><span>HLZ</span></a>
         <a href="#/briefs"    class="nav-item" data-route="briefs" data-tab="cas9"><span class="nav-ico">🎯</span><span>9-Line&nbsp;CAS</span></a>
         <a href="#/briefs"    class="nav-item" data-route="briefs" data-tab="medevac"><span class="nav-ico">✚</span><span>MEDEVAC</span></a>
+        <a href="#/briefing"  class="nav-item" data-route="briefing"><span class="nav-ico">🗂</span><span>Briefing&nbsp;Area</span></a>
         <a href="#/casflow"   class="nav-item" data-route="casflow"><span class="nav-ico">➤</span><span>12-Schritte&nbsp;CAS</span></a>
         <a href="#/grid"      class="nav-item" data-route="grid"><span class="nav-ico">⌖</span><span>Grid-Rechner</span></a>
         <a href="#/timer"     class="nav-item" data-route="timer"><span class="nav-ico">⏱</span><span>Timer&nbsp;/&nbsp;TOT</span></a>
@@ -95,6 +96,7 @@
           <button class="dash-btn" data-goto="briefs" data-tab="hlz"><span class="dash-ico">🛬</span><span class="dash-t1">HLZ Brief</span><span class="dash-t2">Landeplatz-Briefing</span></button>
           <button class="dash-btn" data-goto="briefs" data-tab="cas9"><span class="dash-ico">🎯</span><span class="dash-t1">9-Line CAS</span><span class="dash-t2">Fixed-Wing-Brief</span></button>
           <button class="dash-btn" data-goto="briefs" data-tab="medevac"><span class="dash-ico">✚</span><span class="dash-t1">MEDEVAC</span><span class="dash-t2">Evakuierungs-Briefing</span></button>
+          <button class="dash-btn" data-goto="briefing"><span class="dash-ico">🗂</span><span class="dash-t1">Briefing Area</span><span class="dash-t2">Gunship, CFF, ALZ, Airdrop, RPAS, CCA</span></button>
           <button class="dash-btn" data-goto="grid"><span class="dash-ico">⌖</span><span class="dash-t1">Grid-Rechner</span><span class="dash-t2">Distanz &amp; Peilung, Umrechnung</span></button>
           <button class="dash-btn" data-goto="timer"><span class="dash-ico">⏱</span><span class="dash-t1">Timer / TOT</span><span class="dash-t2">Countdown mit Lase-Fenster</span></button>
           <button class="dash-btn" data-goto="mission"><span class="dash-ico">📋</span><span class="dash-t1">Mission</span><span class="dash-t2">Log, BDA, Favoriten, Checkliste</span></button>
@@ -121,7 +123,7 @@
         <div class="view-head">
           <div>
             <h1>Briefs &amp; Formulare</h1>
-            <p class="lead">Wähle das Format – die App baut dir den Funkspruch als fertige, vorlesbare Sätze. Rot markierte Zeilen = Pflicht-Readback.</p>
+            <p class="lead">Deine Kern-Briefs – die App baut den Funkspruch als fertige, vorlesbare Sätze. Rot markierte Zeilen = Pflicht-Readback. Weitere Formate (Gunship, Call for Fire, ALZ …) findest du unter <a href="#/briefing">Briefing Area</a>.</p>
           </div>
           <div class="field-row">
             <button id="brief-reset" class="btn" title="Formular komplett leeren">↺ Leeren</button>
@@ -154,6 +156,48 @@
             <h2 class="dash-h2" style="margin-top:16px">Standard-Sprüche</h2>
             <div id="brief-phrases" class="quick-row"></div>
             <div id="brief-readback"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== BRIEFING AREA (weitere Briefs) ===== -->
+      <section class="view" id="view-briefing">
+        <div class="view-head">
+          <div>
+            <h1>Briefing Area</h1>
+            <p class="lead">Alle weiteren Brief-Formate aus dem ATG Reference Sheet &amp; Ghost's Cheatsheet – nicht so häufig, aber wenn's gebraucht wird, sofort griffbereit.</p>
+          </div>
+          <div class="field-row">
+            <button id="extra-reset" class="btn" title="Formular komplett leeren">↺ Leeren</button>
+            <button id="extra-copy" class="btn">⧉ Kopieren</button>
+            <button id="extra-send" class="btn btn-primary">📤 Senden &amp; ins Log</button>
+          </div>
+        </div>
+
+        <div class="tabs" id="extra-tabs"></div>
+
+        <div class="af-box" id="extra-airframe" style="display:none"></div>
+
+        <div class="grid-2">
+          <div class="panel">
+            <h2 id="extra-form-title">Formular</h2>
+            <div class="form">
+              <div class="field">
+                <label class="field-label" for="extra-pilot">Pilot-Callsign (für den Funkspruch)</label>
+                <input id="extra-pilot" class="input mono" type="text" list="airframe-cs" placeholder="z. B. GHOSTRIDER 1-1" autocomplete="off">
+              </div>
+              <div id="extra-form" class="form"></div>
+            </div>
+          </div>
+          <div class="panel">
+            <h2>Funkspruch (vorlesbar)</h2>
+            <pre id="extra-preview" class="preview" data-blank="Fülle das Formular aus – der Funkspruch erscheint hier als Sätze, die du einfach vorlesen kannst."></pre>
+            <div class="hint" id="extra-hint"></div>
+            <h2 class="dash-h2" style="margin-top:16px">Schnell-Buttons</h2>
+            <div id="extra-quick" class="quick-row"></div>
+            <h2 class="dash-h2" style="margin-top:16px">Standard-Sprüche</h2>
+            <div id="extra-phrases" class="quick-row"></div>
+            <div id="extra-readback"></div>
           </div>
         </div>
       </section>

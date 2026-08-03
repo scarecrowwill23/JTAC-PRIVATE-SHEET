@@ -47,6 +47,7 @@ setTimeout(() => {
   check(!!window.JTForms, 'JTForms geladen');
   check(!!window.JTMissions, 'JTMissions geladen');
   check(!!window.JTBriefs, 'JTBriefs geladen');
+  check(!!window.JTExtraBriefs, 'JTExtraBriefs geladen (Briefing Area)');
   check(!!window.JTCasFlow, 'JTCasFlow geladen');
   check(!!window.JTTimer, 'JTTimer geladen');
   check(!!window.JTProfiles, 'JTProfiles geladen');
@@ -59,7 +60,9 @@ setTimeout(() => {
   check(window.REF.cas5.lines.length === 5, 'CAS 5-Line: 5 Zeilen');
   check(window.REF.hlz.lines.length === 6, 'HLZ: 6 Zeilen');
   check(window.REF.medevac.lines.length === 9, 'MEDEVAC: 9 Zeilen');
-  check(window.REF.briefFormats.length === 10, '10 Brief-Formate');
+  check(window.REF.briefFormatsMain.length === 4, '4 Haupt-Formate (Kern)');
+  check(window.REF.briefFormatsExtra.length === 6, '6 Briefing-Area-Formate');
+  check(window.REF.briefFormats.length === 10, '10 Brief-Formate gesamt');
   check(window.REF.targets.length >= 15, 'Ziel-Dropdown gefüllt (' + window.REF.targets.length + ')');
   check(window.REF.ordnance.length >= 15, 'Ordnance-Dropdown gefüllt (' + window.REF.ordnance.length + ')');
   check(window.REF.brevity.length >= 90, 'Brevity-Wörterbuch (' + window.REF.brevity.length + ')');
@@ -70,7 +73,7 @@ setTimeout(() => {
   const active = doc.querySelector('.view.active');
   check(active && active.id === 'view-home', 'Home-View aktiv (Dashboard)');
   const dashBtns = doc.querySelectorAll('#view-home .dash-btn');
-  check(dashBtns.length === 8, 'Dashboard: 8 Schnellzugriff-Buttons');
+  check(dashBtns.length === 9, 'Dashboard: 9 Schnellzugriff-Buttons');
   check(doc.getElementById('dash-airframe-box').textContent.includes('MH-60M DAP'), 'Dashboard: Airframe-Karte');
 
   // Mission: anlegen
@@ -146,6 +149,40 @@ setTimeout(() => {
   // 9-Line
   window.JTBriefs.open('cas9');
   check(doc.querySelectorAll('#brief-form .field-row').length === 9, '9-Line: 9 Zeilen');
+
+  // Briefing Area: weitere Briefs
+  window.location.hash = '#/briefing';
+  window.dispatchEvent(new window.HashChangeEvent('hashchange'));
+  check(doc.getElementById('view-briefing').classList.contains('active'), 'Briefing-Area-View aktiv');
+  const extraTabs = doc.querySelectorAll('#extra-tabs .tab');
+  check(extraTabs.length === 6, 'Briefing Area: 6 Tabs (Gunship, RPAS, ALZ, Airdrop, CFF, CCA)');
+  // Call for Fire öffnen
+  const cffTab = [...extraTabs].find(t => t.textContent.includes('Call for Fire'));
+  cffTab.click();
+  check(doc.querySelectorAll('#extra-form .field-row').length === 6, 'Briefing Area: Call for Fire mit 6 Zeilen');
+  const cffSet = (fk, val) => {
+    const el = doc.querySelector(`#extra-form [data-fk="${fk}"]`);
+    if (el) { el.value = val; el.dispatchEvent(new window.Event('input', { bubbles: true })); }
+    return !!el;
+  };
+  cffSet('observer', 'LONGBOW 1');
+  cffSet('warno', 'fire for effect');
+  cffSet('target', '0453 0976');
+  cffSet('desc', '3 technicals');
+  const cffScript = doc.getElementById('extra-preview').dataset.plain || '';
+  check(cffScript.includes('Observer LONGBOW 1'), 'Briefing Area: CFF-Satz Observer');
+  check(cffScript.includes('fire for effect, over'), 'Briefing Area: CFF-Satz WARNO');
+  check(cffScript.includes('Target is on grid 0453 0976'), 'Briefing Area: CFF-Satz Target');
+  // Senden aus Briefing Area → Mission-Log
+  const beforeCff = window.JTMissions.getActive().scripts.length;
+  doc.getElementById('extra-send').click();
+  check(window.JTMissions.getActive().scripts.length === beforeCff + 1, 'Briefing Area: Senden ins Missions-Log');
+  // Reset
+  doc.getElementById('extra-reset').click();
+  check(!(doc.getElementById('extra-preview').dataset.plain || ''), 'Briefing Area: Reset leert Vorschau');
+  // zurück zu Haupt-Briefs
+  window.location.hash = '#/briefs';
+  window.dispatchEvent(new window.HashChangeEvent('hashchange'));
 
   // Grid → Brief
   window.location.hash = '#/grid';

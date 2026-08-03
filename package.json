@@ -1,6 +1,6 @@
 {
   "name": "jtac-helper",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "JTAC Helper – private Desktop-App für Arma 3 (CGF 160th SOAR)",
   "main": "main.js",
   "author": "Private",
@@ -15,6 +15,7 @@
     "electron": "^43.2.0",
     "electron-packager": "^17.1.2",
     "jsdom": "^30.0.1",
-    "mgrs": "^2.2.0"
+    "mgrs": "^2.2.0",
+    "playwright": "^1.62.1"
   }
 }

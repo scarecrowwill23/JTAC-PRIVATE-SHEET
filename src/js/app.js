@@ -48,7 +48,18 @@
   }
 
   // ---------- Router ----------
-  const routes = ['home', 'mission', 'casflow', 'briefs', 'grid', 'timer', 'profile', 'refs'];
+  const routes = ['home', 'mission', 'casflow', 'briefs', 'briefing', 'grid', 'timer', 'profile', 'refs'];
+
+  /** Brief öffnen – je nach Gruppe (Haupt oder Briefing Area). */
+  function openBrief(tab) {
+    if (window.REF.briefFormatsMain.some(f => f.id === tab)) {
+      window.JTBriefs.open(tab);
+      location.hash = '#/briefs';
+    } else if (window.REF.briefFormatsExtra.some(f => f.id === tab)) {
+      window.JTExtraBriefs.open(tab);
+      location.hash = '#/briefing';
+    }
+  }
 
   function renderDashboard() {
     const p = window.JTProfiles.getActive();
@@ -173,15 +184,14 @@
     document.querySelectorAll('[data-goto]').forEach(btn => {
       btn.addEventListener('click', () => {
         const tab = btn.dataset.tab;
-        if (tab && window.JTBriefs) window.JTBriefs.open(tab);
-        location.hash = '#/' + btn.dataset.goto;
+        if (tab) openBrief(tab);
+        else location.hash = '#/' + btn.dataset.goto;
       });
     });
     document.querySelectorAll('.nav-item[data-tab]').forEach(a => {
       a.addEventListener('click', (e) => {
         e.preventDefault();
-        if (window.JTBriefs) window.JTBriefs.open(a.dataset.tab);
-        location.hash = '#/briefs';
+        openBrief(a.dataset.tab);
       });
     });
     const dashCopy = document.getElementById('dash-copy');
@@ -367,6 +377,7 @@
     const zoneSel = document.getElementById('grid-zone');
     if (zoneSel) zoneSel.value = window.JTProfiles.getActive().map || 'altis';
     if (window.JTBriefs && window.JTBriefs.onProfileChange) window.JTBriefs.onProfileChange();
+    if (window.JTExtraBriefs && window.JTExtraBriefs.onProfileChange) window.JTExtraBriefs.onProfileChange();
     if (window.JTCasFlow) window.JTCasFlow.renderPreview();
     renderDashboard();
     renderPins();
@@ -392,13 +403,16 @@
     initGoButtons();
     initSearch();
     window.JTTimer.init();
+    // Briefs-Controller nach dem Laden aller Module initialisieren (JTProfiles benötigt)
     window.JTBriefs.init();
+    window.JTExtraBriefs.init();
     window.JTCasFlow.init();
     window.JTProfiles.renderCards('profile-list');
 
     document.getElementById('copy-all-btn').addEventListener('click', () => {
       const hash = (location.hash || '#/home').replace('#/', '');
       if (hash === 'briefs') window.JTBriefs.copyCurrent();
+      else if (hash === 'briefing') window.JTExtraBriefs.copyCurrent();
       else if (hash === 'casflow') {
         const pre = document.getElementById('casflow-preview');
         if (pre) App.copy(pre.dataset.plain || pre.textContent);
