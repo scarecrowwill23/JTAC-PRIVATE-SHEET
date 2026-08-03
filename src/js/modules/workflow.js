@@ -127,18 +127,20 @@
     const parts = [];
     const all = load();
     const p = window.JTProfiles.getActive();
+    // Deutsche Freitext-Eingaben automatisch ins Funk-Englisch übersetzen
+    const en = (s) => (window.RadioEN ? window.RadioEN.radioEN(s) : s);
 
     if (all.checkin) {
       parts.push('CAS CHECK-IN (' + (p.jtac || 'JTAC') + ')');
-      window.REF.checkinFields.forEach(f => { if (all.checkin[f.key]) parts.push('• ' + f.label + ': ' + all.checkin[f.key]); });
+      window.REF.checkinFields.forEach(f => { if (all.checkin[f.key]) parts.push('• ' + f.label + ': ' + en(all.checkin[f.key])); });
     }
     if (all.tefachr) {
       parts.push('SITREP (' + (p.jtac || 'JTAC') + ')');
-      window.REF.tefachrFields.forEach(f => { if (all.tefachr[f.key]) parts.push('• ' + f.label + ': ' + all.tefachr[f.key]); });
+      window.REF.tefachrFields.forEach(f => { if (all.tefachr[f.key]) parts.push('• ' + f.label + ': ' + en(all.tefachr[f.key])); });
     }
     if (all.gameplan) {
       parts.push('GAME PLAN');
-      window.REF.gameplanFields.forEach(f => { if (all.gameplan[f.key]) parts.push('• ' + f.label + ': ' + all.gameplan[f.key]); });
+      window.REF.gameplanFields.forEach(f => { if (all.gameplan[f.key]) parts.push('• ' + f.label + ': ' + en(all.gameplan[f.key])); });
     }
     if (all.brief) {
       const b = all.brief;
@@ -151,11 +153,11 @@
     }
     if (all.remarks) {
       parts.push('REMARKS & RESTRICTIONS');
-      window.REF.remarksFields.forEach(f => { if (all.remarks[f.key]) parts.push('• ' + f.label + ': ' + all.remarks[f.key]); });
+      window.REF.remarksFields.forEach(f => { if (all.remarks[f.key]) parts.push('• ' + f.label + ': ' + en(all.remarks[f.key])); });
     }
     if (all.bda) {
       parts.push('BDA (SALT-R)');
-      window.REF.bdaFields.forEach(f => { if (all.bda[f.key]) parts.push('• ' + f.label + ': ' + all.bda[f.key]); });
+      window.REF.bdaFields.forEach(f => { if (all.bda[f.key]) parts.push('• ' + f.label + ': ' + en(all.bda[f.key])); });
     }
 
     const text = parts.join('\n');

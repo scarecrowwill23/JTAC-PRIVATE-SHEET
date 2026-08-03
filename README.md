@@ -24,7 +24,7 @@ keine Anmeldung, kein Server, keine Datenübertragung.
 | **➤ 12-Schritte-CAS** | Geführter Ablauf: Check-in → TEFACHR → Game Plan → Brief → Remarks → BDA, als durchgehender Funkspruch. |
 | **⌖ Grid-Rechner** | MGRS ↔ Lat/Long, Arma-Grids, Distanz & Peilung in Grad + Mil. „📌 In Brief einfügen" überträgt das Ergebnis direkt in die 5-/9-Line. |
 | **⏱ Timer / TOT** | Countdown mit automatischem Lase-Fenster (T–30 … T+30) + Piep-Alarmen. |
-| **☎ Profile** | Presets **GRANITE 10 / GRANITE 11 / FLEX** (ACRE-2-Channels, Laser 1111), Airframe-Auswahl mit Bewaffnungs-Details. |
+| **☎ Profile** | **Beliebig viele eigene Profile** – anlegen (Kopie), duplizieren, umbenennen, löschen. Alles frei änderbar: Callsigns, Funk (ACRE-2), Laser, Karte, Notizen. Werks-Presets **GRANITE 10 / GRANITE 11 / FLEX** jederzeit wiederherstellbar (eigene bleiben erhalten). Airframe-Auswahl mit Bewaffnungs-Details. |
 | **⚙ Einstellungen** | **Einstellungen** (Design, Standard-Profil, Standard-Karte) · **📻 Channels (SR/LR)** – eigene Short-/Long-Range-Kanäle anlegen (ACRE-2) · **🗄 Daten** – eigene Ziele, Ordnance, Lage-Begriffe und Callsigns eintragen (fließen überall ein). |
 | **▤ Referenzen** | Brevity (93 Begriffe, durchsuchbar), Danger Close, Höhen/Keyhole, Airframes, Funk, Verfahren + **📄 Original-PDFs zum Nachschlagen**. |
 | **⚡ Schnelligkeit** | Globale Suche (Brevity, Ziele, Favoriten, Missionen), Sidebar-Pins (Favoriten), Schnell-Buttons (CONTACT, CLEARED HOT, SHACK …), Standard-Sprüche, Auto-Fokus. |
@@ -46,6 +46,11 @@ Laser to target line 342
 
 **📤 Senden & ins Log** kopiert den Spruch, schreibt ihn in die Missions-Historie und zeigt dir
 die Readback-Zeilen zum Abhaken, wenn der Pilot bestätigt hat.
+
+**🗣 Auto-Übersetzer:** Du kannst in den Freitext-Feldern Deutsch tippen – die App übersetzt
+die gängigen Begriffe im Funkspruch automatisch ins Funk-Englisch. Aus
+`200 m westlich des Ziels` wird `200 m west of the target`, aus `grün Rauch` wird `green smoke`.
+(Früher gespeicherte deutsche Eingaben werden dabei mit repariert.)
 
 ## Starten (Entwicklung)
 

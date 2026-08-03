@@ -478,17 +478,40 @@
       App.toast('Profil gespeichert.');
     });
 
-    document.getElementById('profile-reset').addEventListener('click', () => {
-      if (confirm('Alle Profile auf Standard zurücksetzen?')) {
-        window.JTProfiles.resetDefaults();
-        refresh();
-        window.JTProfiles.renderCards('profile-list');
-        window.JTProfiles.renderEditForm();
-        onProfileChange();
-        App.toast('Profile zurückgesetzt.');
-      }
+    // Werks-Presets (GRANITE 10/11/FLEX) wieder hinzufügen – eigene bleiben erhalten
+    document.getElementById('profile-restore').addEventListener('click', () => {
+      const n = window.JTProfiles.restorePresets();
+      refresh();
+      window.JTProfiles.renderCards('profile-list');
+      window.JTProfiles.renderEditForm();
+      onProfileChange();
+      App.toast(n ? 'Presets wiederhergestellt (' + n + ' hinzugefügt).' : 'Alle Presets sind schon da.');
     });
+
+    // Aktives Profil löschen
+    document.getElementById('profile-delete').addEventListener('click', () => {
+      const p = window.JTProfiles.getActive();
+      if (!confirm('Profil „' + p.name + '" wirklich löschen?')) return;
+      const r = window.JTProfiles.remove(p.id);
+      if (r === 'last') { App.toast('Das letzte Profil kann nicht gelöscht werden.', true); return; }
+      refresh();
+      window.JTProfiles.renderCards('profile-list');
+      window.JTProfiles.renderEditForm();
+      onProfileChange();
+      App.toast('Profil gelöscht.');
+    });
+
+    // Wird von profiles.js aufgerufen, wenn sich die Liste ändert (Neu/Duplikat/Löschen)
+    App.refreshProfileSelect = refresh;
   }
+
+  /** Nach Profil-Strukturänderungen: Topbar-Select + Karten + Formular neu. */
+  function refreshAllProfiles() {
+    if (App.refreshProfileSelect) App.refreshProfileSelect();
+    window.JTProfiles.renderCards('profile-list');
+    window.JTProfiles.renderEditForm();
+  }
+  App.refreshAllProfiles = refreshAllProfiles;
 
   function onProfileChange() {
     const sel = document.getElementById('profile-select');
