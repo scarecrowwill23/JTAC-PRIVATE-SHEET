@@ -17,7 +17,7 @@ kein Server, keine Datenübertragung. Alles wird im Browser-Speicher der App ges
 | **Briefs & Formulare** | **10 Formate**: 9-Line CAS, 5-Line CAS, MEDEVAC/CASEVAC, SOF Gunship, CCA 5-Line, RPAS (UAV), HLZ, ALZ, Airdrop, Call for Fire – mit ⚠-Kennzeichnung der Pflicht-Readbacks |
 | **Grid-Rechner** | MGRS (ACE) ↔ Lat/Long, Arma-Grids (6/8/10-stellig), Distanz & Peilung in Grad + Mil, Einzelpunkt-Umrechnung |
 | **Timer / TOT** | Countdown bis Time-on-Target, automatisches Lase-Fenster (T–30 … T+30), Piep-Alarme |
-| **Profile & Netze** | Bis zu 3 Profile: Callsigns, Frequenzen, Laser-Code, Karten-Voreinstellung, Notizen |
+| **Profile & Netze** | 3 Presets: **GRANITE 10**, **GRANITE 11**, **FLEX** – mit euren Callsigns, Funk (Channel 2 TAD), Laser 1111, Karten-Voreinstellung, Notizen |
 | **Referenzen** | Durchsuchbares Brevity-Wörterbuch (89 Begriffe, 8 Kategorien), Danger-Close-Tabelle, Keyhole & Höhenblöcke, Airframes der 160th SOAR, Funkgeräte, Funketikette, PACE, Phonetik, Laser-/IR-Prozeduren |
 
 ### Inhalte aus den Dokumenten
@@ -25,6 +25,7 @@ kein Server, keine Datenübertragung. Alles wird im Browser-Speicher der App ges
 - **12 Schritte CAS** (Routing → Check-in → TEFACHR → Game Plan → Brief → Readbacks → Korrelation → Angriff → BDA → Egress)
 - **Danger Close** nach Waffe: MK-82 285 m, GBU-12 270 m, GBU-31 465 m, GBU-32 340 m, GBU-38 270 m, GBU-54 280 m, Hydra 70 270 m, APKWS 105 m, AGM-65 175 m, AGM-114 115 m, 20/25/30 mm 60–200 m, 105 mm (AC-130) 160 m … Standard: 400 m
 - **CGF 160th SOAR Airframes**: PRINCE 6-X (MH-60M), BUFFALO 2-X (MH-47G), VALIANT 5-X (MH-6M), SPIRIT 7-X (MEDEVAC), ARCHER 3-X (MH-60M DAP), LANCER 4-X (DAP MLASS), LYNX 8-X (AH-6M), GHOSTRIDER 1-X (AC-130), AVENGER 9 (MQ-9), MC-130J
+- **Airframe-Auswahl überall**: CAS-Callsign als Dropdown (Auto-Vervollständigung) mit allen euren Callsigns; bei Auswahl werden Bewaffnung, Features & Crew direkt angezeigt (im Profil-Editor und in der Briefs-Ansicht)
 - **Kontrolltypen** 1/2/3, **BOT/BOC**, **Keyhole-Methode**, **Höhenblöcke** (Cherubs/Angels)
 - **TEFACHR**-SITREP, **SALT-R**-BDA, Laser-/IR-/Smoke-Markierungsprozeduren
 

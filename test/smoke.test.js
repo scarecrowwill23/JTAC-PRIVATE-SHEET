@@ -133,6 +133,22 @@ setTimeout(() => {
   check(!!doc.getElementById('timer-start'), 'Timer-Button vorhanden');
   window.JTProfiles.renderCards('profile-list');
   check(doc.querySelectorAll('#profile-list .profile-card').length === 3, '3 Profil-Karten');
+  check(doc.querySelector('#profile-list .profile-card h3').textContent.includes('GRANITE 10'), 'Preset GRANITE 10 vorhanden');
+  window.JTProfiles.renderEditForm();
+  check(doc.getElementById('pf-name').value === 'GRANITE 10', 'Profil-Bearbeitung: GRANITE 10');
+  check(doc.getElementById('pf-freqcas').value === 'Ch. 2 TAD', 'Profil: Funk Channel 2 TAD');
+  check(doc.getElementById('pf-laser').value === '1111', 'Profil: Laser 1111');
+  const af = window.REF.findAirframe('ARCHER 3-X');
+  check(af && af.name === 'MH-60M DAP', 'findAirframe(ARCHER 3-X) → MH-60M DAP');
+  check(window.REF.airframesFlat.length === 10, 'airframesFlat: 10 Einträge');
+  // Airframe-Hinweis rendert
+  window.JTProfiles.renderAirframeHint();
+  check(doc.getElementById('pf-airframe').style.display === 'block' && doc.getElementById('pf-airframe').textContent.includes('MH-60M DAP'), 'Airframe-Hinweis im Profil');
+  // Briefs: Airframe-Referenzbox
+  window.location.hash = '#/briefs';
+  window.dispatchEvent(new window.HashChangeEvent('hashchange'));
+  const baf = doc.getElementById('brief-airframe');
+  check(baf && baf.style.display === 'block' && baf.textContent.includes('MH-60M DAP'), 'Briefs: Airframe-Referenzbox');
 
   // Theme
   doc.getElementById('theme-toggle').click();

@@ -14,7 +14,7 @@
       <span class="brand-mark">JT</span>
       <div class="brand-text">
         <span class="brand-title">JTAC&nbsp;PRIVATE&nbsp;SHEET</span>
-        <span class="brand-sub" id="brand-sub">CGF 160th SOAR · v0.2</span>
+        <span class="brand-sub" id="brand-sub">CGF 160th SOAR · v0.3</span>
       </div>
     </div>
 
@@ -141,6 +141,8 @@
         </div>
 
         <div class="tabs" id="brief-tabs"></div>
+
+        <div class="af-box" id="brief-airframe" style="display:none"></div>
 
         <div class="grid-2">
           <div class="panel">
@@ -271,14 +273,15 @@
                 <input id="pf-jtac" class="input mono" type="text" placeholder="z. B. LONGBOW 1">
               </div>
               <div class="field">
-                <label class="field-label" for="pf-cas">CAS-Callsign</label>
-                <input id="pf-cas" class="input mono" type="text" placeholder="z. B. HAVOC 1-1">
+                <label class="field-label" for="pf-cas">CAS-Callsign (eure Airframes)</label>
+                <input id="pf-cas" class="input mono" type="text" list="airframe-cs" placeholder="z. B. ARCHER 3-X" autocomplete="off">
               </div>
               <div class="field">
                 <label class="field-label" for="pf-med">MEDEVAC-Callsign</label>
-                <input id="pf-med" class="input mono" type="text" placeholder="z. B. SPIRIT 7-1">
+                <input id="pf-med" class="input mono" type="text" placeholder="z. B. SPIRIT 7-X">
               </div>
             </div>
+            <div class="af-box" id="pf-airframe" style="display:none"></div>
             <div class="field-row">
               <div class="field">
                 <label class="field-label" for="pf-freqcas">Frequenz CAS (MHz)</label>

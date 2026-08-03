@@ -578,5 +578,24 @@ const REF = {
   riskLevels: ['LOW','MEDIUM','HIGH']
 };
 
+// Flache Airframe-Liste (für Dropdowns/Auto-Vervollständigung)
+REF.airframesFlat = [];
+Object.keys(REF.airframes).forEach(cat => {
+  REF.airframes[cat].forEach(a => {
+    REF.airframesFlat.push({ ...a, cat });
+  });
+});
+REF.airframeCallsigns = REF.airframesFlat.map(a => a.cs);
+
+/** Airframe zu einem Callsign finden (Case-insensitiv, prefix-tolerant). */
+REF.findAirframe = function (cs) {
+  if (!cs) return null;
+  const q = String(cs).trim().toUpperCase();
+  return REF.airframesFlat.find(a => {
+    const aq = a.cs.toUpperCase();
+    return aq === q || aq.replace(' (WIP)', '') === q || q.startsWith(aq.split(' ')[0]);
+  }) || null;
+};
+
 if (typeof window !== 'undefined') { window.REF = REF; }
 if (typeof module !== 'undefined' && module.exports) { module.exports = REF; }

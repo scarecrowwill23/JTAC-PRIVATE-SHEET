@@ -172,6 +172,22 @@
       App.toast('Profil: ' + window.JTProfiles.getActive().name);
     });
 
+    // Airframe-Callsign-Datalist
+    const dl = document.createElement('datalist');
+    dl.id = 'airframe-cs';
+    window.REF.airframesFlat.forEach(a => {
+      const o = document.createElement('option');
+      o.value = a.cs;
+      o.label = a.name + ' – ' + a.info;
+      dl.appendChild(o);
+    });
+    document.body.appendChild(dl);
+
+    // Live-Airframe-Info im Bearbeitungsformular
+    document.getElementById('pf-cas').addEventListener('input', () => {
+      window.JTProfiles.renderAirframeHint();
+    });
+
     document.getElementById('profile-save').addEventListener('click', () => {
       const p = window.JTProfiles.getActive();
       const values = window.JTProfiles.readEditForm();

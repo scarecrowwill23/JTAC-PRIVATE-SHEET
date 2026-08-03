@@ -51,13 +51,35 @@
     const def = window.REF[FORMATS.find(f => f.id === id).ref];
     const p = window.JTProfiles.getActive();
     let header = def.header || '';
-    if (id === 'cas9') header = `${p.jtac || 'JTAC'} – ${def.header}`;
-    if (id === 'cas5') header = `${p.jtac || 'JTAC'} – ${def.header}`;
+    if (id === 'cas9' || id === 'cas5') {
+      header = (p.jtac ? p.jtac + ' – ' : '') + def.header;
+    }
     const text = window.JTForms.buildPreview(def, values, { header });
     const pre = document.getElementById('brief-preview');
     pre.textContent = text || pre.dataset.blank || '';
     pre.dataset.plain = text || '';
     pre.classList.toggle('blank', !text);
+  }
+
+  /** Aktives Profil → CAS-Airframe-Referenz anzeigen. */
+  function renderAirframeRef() {
+    const box = document.getElementById('brief-airframe');
+    if (!box) return;
+    const p = window.JTProfiles.getActive();
+    const af = window.REF.findAirframe(p.cas);
+    if (!af) {
+      box.style.display = 'none';
+      return;
+    }
+    box.style.display = 'block';
+    box.innerHTML =
+      `<div class="af-head"><b>${af.cs}</b> — ${af.name} <span class="af-cat">${af.cat}</span>` +
+      ` <span class="af-prof">(Profil: ${p.name})</span></div>` +
+      `<div class="af-row"><span>Bewaffnung</span>${af.info}</div>` +
+      `<div class="af-row"><span>Features</span>${af.feat}</div>` +
+      `<div class="af-row"><span>Crew</span>${af.crew}</div>` +
+      `<div class="af-row"><span>Funk</span>${p.freqCas || '–'}</div>` +
+      `<div class="af-row"><span>Laser</span>${p.laser || '–'}</div>`;
   }
 
   function renderTabs() {
@@ -70,6 +92,7 @@
       btn.addEventListener('click', () => { current = f.id; renderTabs(); buildForm(current); });
       root.appendChild(btn);
     });
+    renderAirframeRef();
   }
 
   function copyCurrent() {
@@ -81,9 +104,10 @@
     renderTabs();
     buildForm(current);
     window.JTBriefs.onProfileChange = () => {
-      // nur Vorschau aktualisieren (Formular-Werte bleiben erhalten)
+      // nur Vorschau + Airframe-Referenz aktualisieren (Formular-Werte bleiben erhalten)
       const f = forms[current];
       if (f) renderPreview(current, f.getValues());
+      renderAirframeRef();
     };
   }
 

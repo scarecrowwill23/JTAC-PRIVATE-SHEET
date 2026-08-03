@@ -458,6 +458,47 @@ select.select option { background: var(--panel); }
 }
 
 /* ============================================================
+   Airframe-Referenz-Box
+   ============================================================ */
+.af-box {
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  background: var(--panel);
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow);
+  font-size: 13px;
+}
+.af-box .af-head {
+  font-size: 15px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.af-box .af-cat {
+  background: var(--panel-2);
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  padding: 1px 8px;
+  font-size: 11px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: .5px;
+}
+.af-box .af-prof { color: var(--text-dim); font-size: 11.5px; }
+.af-box .af-row {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 10px;
+  padding: 3px 0;
+  border-top: 1px solid var(--border);
+}
+.af-box .af-row span { color: var(--text-dim); font-weight: 600; }
+.af-box .af-row:last-child { border-bottom: 1px solid var(--border); }
+
+/* ============================================================
    Toast
    ============================================================ */
 .toast {

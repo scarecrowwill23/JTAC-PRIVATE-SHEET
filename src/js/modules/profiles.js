@@ -2,6 +2,12 @@
 // JTAC Private Sheet – Profile & Netze
 // Bis zu 3 feste Profile mit Callsigns, Frequenzen, Laser,
 // Karten-Voreinstellung und Notizen. Speicherung: localStorage.
+//
+// Voreingestellte Presets (CGF 160th SOAR):
+//   GRANITE 10  – Standard JTAC
+//   GRANITE 11  – Zweit-JTAC
+//   FLEX        – frei (andere Callsigns)
+// Funk: Channel 2 TAD (CAS + MEDEVAC) · Laser-Code: 1111
 // ============================================================
 
 (function () {
@@ -13,18 +19,40 @@
   const DEFAULT_PROFILES = [
     {
       id: 'p1',
-      name: 'Standard JTAC',
-      jtac: 'LONGBOW 1',
-      cas: 'HAVOC 1-1',
-      med: 'DUSTOFF 1',
-      freqCas: '36.50',
-      freqMed: '38.00',
-      laser: '1688',
+      name: 'GRANITE 10',
+      jtac: 'GRANITE 10',
+      cas: 'ARCHER 3-X',
+      med: 'SPIRIT 7-X',
+      freqCas: 'Ch. 2 TAD',
+      freqMed: 'Ch. 2 TAD',
+      laser: '1111',
       map: 'altis',
-      notes: ''
+      notes: 'Standard-JTAC (160th SOAR). Funk: Channel 2 TAD.'
     },
-    { id: 'p2', name: 'Einsatz 2', jtac: '', cas: '', med: '', freqCas: '', freqMed: '', laser: '', map: 'altis', notes: '' },
-    { id: 'p3', name: 'Einsatz 3', jtac: '', cas: '', med: '', freqCas: '', freqMed: '', laser: '', map: 'altis', notes: '' }
+    {
+      id: 'p2',
+      name: 'GRANITE 11',
+      jtac: 'GRANITE 11',
+      cas: 'LANCER 4-X',
+      med: 'SPIRIT 7-X',
+      freqCas: 'Ch. 2 TAD',
+      freqMed: 'Ch. 2 TAD',
+      laser: '1111',
+      map: 'altis',
+      notes: 'Zweit-JTAC (160th SOAR). Funk: Channel 2 TAD.'
+    },
+    {
+      id: 'p3',
+      name: 'FLEX',
+      jtac: '',
+      cas: '',
+      med: '',
+      freqCas: 'Ch. 2 TAD',
+      freqMed: 'Ch. 2 TAD',
+      laser: '1111',
+      map: 'altis',
+      notes: 'Frei belegbar – für andere Callsigns.'
+    }
   ];
 
   let profiles = load() || JSON.parse(JSON.stringify(DEFAULT_PROFILES));
@@ -85,7 +113,7 @@
 
       const fields = [
         ['JTAC', p.jtac], ['CAS', p.cas], ['MEDEVAC', p.med],
-        ['Freq CAS', p.freqCas], ['Freq MED', p.freqMed], ['Laser', p.laser],
+        ['Funk', p.freqCas], ['Laser', p.laser],
         ['Karte', mapName(p.map)]
       ];
       fields.forEach(([k, v]) => {
@@ -113,12 +141,6 @@
     });
   }
 
-  function renderNotes() {
-    const ta = document.getElementById('pf-notes');
-    if (!ta) return;
-    ta.value = getActive().notes || '';
-  }
-
   /** Aktives Profil in das Bearbeitungsformular laden. */
   function renderEditForm() {
     const p = getActive();
@@ -142,6 +164,26 @@
       });
       mapSel.value = p.map || 'altis';
     }
+    renderAirframeHint();
+  }
+
+  /** Airframe-Infos zum CAS-Callsign anzeigen (falls einer unserer Maschinen). */
+  function renderAirframeHint() {
+    const box = document.getElementById('pf-airframe');
+    if (!box) return;
+    const cs = document.getElementById('pf-cas').value.trim();
+    const af = window.REF.findAirframe(cs);
+    if (!af) {
+      box.innerHTML = '';
+      box.style.display = 'none';
+      return;
+    }
+    box.style.display = 'block';
+    box.innerHTML =
+      `<div class="af-head"><b>${af.cs}</b> — ${af.name} <span class="af-cat">${af.cat}</span></div>` +
+      `<div class="af-row"><span>Bewaffnung</span>${af.info}</div>` +
+      `<div class="af-row"><span>Features</span>${af.feat}</div>` +
+      `<div class="af-row"><span>Crew</span>${af.crew}</div>`;
   }
 
   /** Werte aus dem Bearbeitungsformular lesen. */
@@ -160,5 +202,5 @@
     };
   }
 
-  window.JTProfiles = { getProfiles, getActive, setActive, update, resetDefaults, renderCards, renderNotes, renderEditForm, readEditForm, mapName };
+  window.JTProfiles = { getProfiles, getActive, setActive, update, resetDefaults, renderCards, renderEditForm, readEditForm, renderAirframeHint, mapName };
 })();
