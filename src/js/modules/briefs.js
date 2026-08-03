@@ -21,24 +21,25 @@
   ];
 
   let current = 'cas9';
-  let forms = {};   // id -> {getValues, setValues, onUpdate}
+  let forms = {};    // id -> {getValues, setValues, onUpdate}
+  const session = {}; // In-Memory: Werte gelten nur für diese Sitzung (App-Start = leere Formulare)
 
   function storageKey(id) { return window.JTForms.LS[id]; }
 
   function buildForm(id) {
     const def = window.REF[FORMATS.find(f => f.id === id).ref];
     const load = () => {
-      try {
-        const stored = JSON.parse(localStorage.getItem(storageKey(id)) || '{}');
-        const p = window.JTProfiles.getActive();
-        // MEDEVAC: Frequenz/Callsign aus Profil vorbelegen
-        if (id === 'medevac' && !stored.freq && p.freqMed) {
-          stored.freq = p.freqMed + (p.med ? ' / ' + p.med : '');
-        }
-        return stored;
-      } catch (e) { return {}; }
+      // IMMER leer beim Start – nichts vom letzten Einsatz.
+      // Während der Sitzung bleiben Werte beim Tab-Wechsel erhalten (session).
+      const v = session[id] ? JSON.parse(JSON.stringify(session[id])) : {};
+      const p = window.JTProfiles.getActive();
+      // MEDEVAC: Frequenz/Callsign aus Profil vorbelegen, falls noch nichts eingetragen
+      if (id === 'medevac' && !v.freq && p.freqMed) {
+        v.freq = p.freqMed + (p.med ? ' / ' + p.med : '');
+      }
+      return v;
     };
-    const save = (v) => localStorage.setItem(storageKey(id), JSON.stringify(v));
+    const save = (v) => { session[id] = JSON.parse(JSON.stringify(v)); };
     const onChange = (v) => renderPreview(id, v);
 
     forms[id] = window.JTForms.initBriefForm('brief-form', def, { load, save, onChange });

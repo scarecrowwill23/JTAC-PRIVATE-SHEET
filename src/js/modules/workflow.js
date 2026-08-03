@@ -11,12 +11,12 @@
   const STEPS = window.REF.casSteps;
   let current = 0;
   let forms = {}; // step.form -> Form
+  let session = {}; // In-Memory: nichts vom letzten Einsatz beim App-Start
 
   function load() {
-    try { return JSON.parse(localStorage.getItem(LS)) || {}; }
-    catch (e) { return {}; }
+    return session;
   }
-  function save(v) { localStorage.setItem(LS, JSON.stringify(v)); }
+  function save(v) { session = v; }
 
   function buildStepForm(step) {
     const container = document.getElementById('casflow-form');

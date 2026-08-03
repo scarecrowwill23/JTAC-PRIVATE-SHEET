@@ -100,9 +100,10 @@ setTimeout(() => {
   const flowForm = doc.getElementById('casflow-form');
   check(flowForm && flowForm.querySelectorAll('.field-row').length >= 8, 'CASFlow: Check-in-Formular gerendert (' + (flowForm ? flowForm.querySelectorAll('.field-row').length : 0) + ' Zeilen)');
 
-  // Briefs: Tabs & Form
+  // Briefs: Tabs & Form – sicher CAS 9-Line aktiv machen
   window.location.hash = '#/briefs';
   window.dispatchEvent(new window.HashChangeEvent('hashchange'));
+  window.JTBriefs.open('cas9');
   const tabs = doc.querySelectorAll('#brief-tabs .tab');
   check(tabs.length === 10, 'Briefs: 10 Tabs');
   check(doc.querySelectorAll('#brief-form .field-row').length === 9, 'Briefs: CAS 9-Line mit 9 Zeilen');
@@ -124,7 +125,20 @@ setTimeout(() => {
     medTab.click();
     check(doc.querySelectorAll('#brief-form .field-row').length === 9, 'MEDEVAC: 9 Zeilen');
     check(!!doc.querySelector('#brief-form .numgroup'), 'MEDEVAC: Prioritäten-Zahlengruppe');
+    // MEDEVAC-Frequenz aus Profil vorbelegt
+    const freqInput = [...doc.querySelectorAll('#brief-form input')].find(i => i.placeholder.includes('SPIRIT'));
+    check(freqInput && freqInput.value === 'Ch. 2 TAD / SPIRIT 7-X', 'MEDEVAC: Frequenz aus Profil vorbelegt: ' + (freqInput && freqInput.value));
   }
+
+  // Formulare: IMMER leer beim App-Start (nichts in localStorage)
+  check(!window.localStorage.getItem('jtac.cas9'), '9-Line: nichts in localStorage (Start immer leer)');
+  check(!window.localStorage.getItem('jtac.medevac'), 'MEDEVAC: nichts in localStorage');
+
+  // Session: Werte bleiben beim Tab-Wechsel innerhalb der Sitzung
+  window.JTBriefs.open('medevac');
+  window.JTBriefs.open('cas9');
+  const firstInput = doc.querySelector('#brief-form .field-row input');
+  check(firstInput && firstInput.value === '35S LE 20476 18769', 'Session: 9-Line-Wert bleibt beim Tab-Wechsel (' + (firstInput && firstInput.value) + ')');
 
   // Referenzen
   window.location.hash = '#/refs';

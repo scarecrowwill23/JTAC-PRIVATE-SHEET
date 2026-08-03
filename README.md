@@ -16,6 +16,8 @@ kein Server, keine Datenübertragung. Alles wird im Browser-Speicher der App ges
 | **Start (Dashboard)** | Einsatz-Zentrale beim Öffnen: aktive Mission (Profil, JTAC, Funk, Laser, Karte, MEDEVAC), dein CAS-Airframe mit Bewaffnung, große Schnellzugriff-Buttons, „Funkspruch kopieren" mit einem Klick |
 | **9-Line CAS** | Direkt erreichbar (Sidebar & Dashboard): alle 9 Zeilen, Live-Funkspruch, ⧉ kopieren, Auto-Fokus aufs erste Feld |
 | **MEDEVAC** | Direkt erreichbar – NATO-Medevac mit Prioritäten A–E, Sicherheitslage, CBRN |
+| **Immer leer beim Start** | Formulare starten bei jedem App-Start leer – nichts vom letzten Einsatz. Während der Sitzung bleiben Werte beim Tab-Wechsel erhalten. |
+| **Großzügiges Layout** | Große, luftige Felder (gut lesbar aus Entfernung), Pflicht-Readback-Zeilen (4, 6, 8 …) rot hinterlegt & markiert – Original-Reihenfolge bleibt erhalten |
 | **Briefs & Formulare** | **10 Formate**: 9-Line CAS, 5-Line CAS, MEDEVAC/CASEVAC, SOF Gunship, CCA 5-Line, RPAS (UAV), HLZ, ALZ, Airdrop, Call for Fire – mit ⚠-Kennzeichnung der Pflicht-Readbacks |
 | **Grid-Rechner** | MGRS (ACE) ↔ Lat/Long, Arma-Grids (6/8/10-stellig), Distanz & Peilung in Grad + Mil, Einzelpunkt-Umrechnung |
 | **Timer / TOT** | Countdown bis Time-on-Target, automatisches Lase-Fenster (T–30 … T+30), Piep-Alarme |
