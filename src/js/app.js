@@ -1,6 +1,6 @@
 // ============================================================
-// JTAC Private Sheet – App-Steuerung
-// Router, Theme, Toast, Kopieren, Modul-Verdrahtung.
+// JTAC Helper – App-Steuerung
+// Router, Theme, Toast, Kopieren, Suche, Sidebar-Pins, Verdrahtung
 // ============================================================
 
 (function () {
@@ -48,34 +48,127 @@
   }
 
   // ---------- Router ----------
-  const routes = ['home', 'casflow', 'briefs', 'grid', 'timer', 'profile', 'refs'];
+  const routes = ['home', 'mission', 'casflow', 'briefs', 'grid', 'timer', 'profile', 'refs'];
 
-  /** Dashboard (Start) rendern: aktive Mission + Airframe-Karte. */
   function renderDashboard() {
     const p = window.JTProfiles.getActive();
-    const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v || '–'; };
-    set('dash-profil', p.name);
-    set('dash-jtac', p.jtac);
-    set('dash-freq', p.freqCas);
-    set('dash-laser', p.laser);
-    set('dash-map', window.JTProfiles.mapName(p.map));
-    set('dash-med', p.med);
+    const m = window.JTMissions.getActive();
+
+    // Mission-Box
+    const mbox = document.getElementById('dash-mission-box');
+    if (mbox) {
+      if (m) {
+        mbox.innerHTML = `
+          <div class="dash-mission-grid">
+            <div class="kv"><span>Mission</span><b>${m.name}</b></div>
+            <div class="kv"><span>Karte</span><b>${window.JTProfiles.mapName(m.map)}</b></div>
+            <div class="kv"><span>Funksprüche</span><b>${m.scripts.length}</b></div>
+            <div class="kv"><span>BDA</span><b>${m.bda.length}</b></div>
+            <div class="kv"><span>Profil</span><b>${p.name}</b></div>
+            <div class="kv"><span>Funk</span><b>${p.freqCas || '–'}</b></div>
+          </div>`;
+      } else {
+        mbox.innerHTML = '<p class="hint">Keine Mission aktiv – <a href="#/mission">hier eine anlegen</a>, dann sammelt die App alles.</p>';
+      }
+    }
 
     const box = document.getElementById('dash-airframe-box');
-    if (!box) return;
-    const af = window.REF.findAirframe(p.cas);
-    if (!af) {
-      box.innerHTML = '<span class="hint">Kein Airframe-Callsign im Profil hinterlegt.</span>';
-      return;
+    if (box) {
+      const af = window.REF.findAirframe(p.cas);
+      if (!af) {
+        box.innerHTML = '<span class="hint">Kein Airframe-Callsign im Profil hinterlegt.</span>';
+      } else {
+        box.innerHTML =
+          `<div class="af-head"><b>${af.cs}</b> — ${af.name} <span class="af-cat">${af.cat}</span></div>` +
+          `<div class="af-row"><span>Bewaffnung</span>${af.info}</div>` +
+          `<div class="af-row"><span>Features</span>${af.feat}</div>` +
+          `<div class="af-row"><span>Crew</span>${af.crew}</div>`;
+      }
     }
-    box.innerHTML =
-      `<div class="af-head"><b>${af.cs}</b> — ${af.name} <span class="af-cat">${af.cat}</span></div>` +
-      `<div class="af-row"><span>Bewaffnung</span>${af.info}</div>` +
-      `<div class="af-row"><span>Features</span>${af.feat}</div>` +
-      `<div class="af-row"><span>Crew</span>${af.crew}</div>`;
   }
 
-  /** Klick-Handler für Dashboard-Buttons & Sidebar-Verknüpfungen (data-goto / data-tab). */
+  /** Sidebar-Pins: Favoriten-Punkte der aktiven Mission + Schnellzugriff. */
+  function renderPins() {
+    const root = document.getElementById('nav-pins');
+    if (!root) return;
+    root.innerHTML = '';
+    const m = window.JTMissions.getActive();
+    if (!m) return;
+    if (!m.favs.length) {
+      const hint = document.createElement('div');
+      hint.className = 'pin-hint';
+      hint.textContent = 'Pins: Mission-Favoriten erscheinen hier.';
+      root.appendChild(hint);
+      return;
+    }
+    const head = document.createElement('div');
+    head.className = 'pin-head';
+    head.textContent = 'Favoriten';
+    root.appendChild(head);
+    m.favs.forEach(f => {
+      const btn = document.createElement('button');
+      btn.className = 'pin-btn';
+      btn.textContent = f.name;
+      btn.title = f.grid + ' → in Brief übernehmen';
+      btn.addEventListener('click', () => {
+        if (window.JTBriefs && window.JTBriefs.applyGrid) window.JTBriefs.applyGrid(f.grid);
+        location.hash = '#/briefs';
+      });
+      root.appendChild(btn);
+    });
+  }
+
+  // ---------- Globale Suche ----------
+  function initSearch() {
+    const input = document.getElementById('global-search');
+    const box = document.getElementById('search-results');
+    if (!input || !box) return;
+
+    input.addEventListener('input', () => {
+      const q = input.value.trim().toLowerCase();
+      box.innerHTML = '';
+      if (q.length < 2) { box.style.display = 'none'; return; }
+
+      const results = [];
+      // Brevity
+      window.REF.brevity
+        .filter(b => b.code.toLowerCase().includes(q) || b.text.toLowerCase().includes(q))
+        .slice(0, 5)
+        .forEach(b => results.push({ type: 'Brevity', label: b.code, sub: b.text, action: () => { window.location.hash = '#/refs'; setTimeout(() => { const el = document.getElementById('refs-tabs'); if (el) [...el.children].find(t => t.textContent === 'Brevity')?.click(); }, 100); } }));
+      // Ziele
+      window.REF.targets
+        .filter(t => t.toLowerCase().includes(q))
+        .slice(0, 4)
+        .forEach(t => results.push({ type: 'Ziel', label: t, sub: 'In Ziel-Beschreibung einfügen', action: () => { if (window.JTBriefs) window.JTBriefs.insertTarget(t); location.hash = '#/briefs'; } }));
+      // Favoriten
+      const m = window.JTMissions.getActive();
+      if (m) {
+        m.favs
+          .filter(f => f.name.toLowerCase().includes(q) || (f.grid || '').includes(q))
+          .slice(0, 4)
+          .forEach(f => results.push({ type: 'Favorit', label: f.name, sub: f.grid, action: () => { if (window.JTBriefs) window.JTBriefs.applyGrid(f.grid); location.hash = '#/briefs'; } }));
+      }
+      // Missionen
+      window.JTMissions.getMissions()
+        .filter(x => x.name.toLowerCase().includes(q))
+        .slice(0, 3)
+        .forEach(x => results.push({ type: 'Mission', label: x.name, sub: window.JTProfiles.mapName(x.map), action: () => { window.JTMissions.setActive(x.id); window.App.onMissionChange(); location.hash = '#/mission'; } }));
+
+      if (!results.length) { box.style.display = 'none'; return; }
+      results.forEach(r => {
+        const row = document.createElement('button');
+        row.className = 'search-item';
+        row.innerHTML = `<b>${r.label}</b> <span>${r.type}</span><div>${r.sub}</div>`;
+        row.addEventListener('click', () => { r.action(); box.style.display = 'none'; input.value = ''; });
+        box.appendChild(row);
+      });
+      box.style.display = 'block';
+    });
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.topbar-center')) box.style.display = 'none';
+    });
+  }
+
   function initGoButtons() {
     document.querySelectorAll('[data-goto]').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -84,7 +177,6 @@
         location.hash = '#/' + btn.dataset.goto;
       });
     });
-    // Sidebar-Links mit data-tab (9-Line / MEDEVAC)
     document.querySelectorAll('.nav-item[data-tab]').forEach(a => {
       a.addEventListener('click', (e) => {
         e.preventDefault();
@@ -93,10 +185,9 @@
       });
     });
     const dashCopy = document.getElementById('dash-copy');
-    if (dashCopy) dashCopy.addEventListener('click', () => {
-      // letzten Funkspruch aus dem aktiven Brief kopieren
-      if (window.JTBriefs) window.JTBriefs.copyCurrent();
-    });
+    if (dashCopy) dashCopy.addEventListener('click', () => { if (window.JTBriefs) window.JTBriefs.copyCurrent(); });
+    const dashMission = document.getElementById('dash-mission');
+    if (dashMission) dashMission.addEventListener('click', () => { location.hash = '#/mission'; });
   }
 
   function route() {
@@ -109,13 +200,14 @@
       a.classList.toggle('active', a.dataset.route === name);
     });
     if (name === 'home') renderDashboard();
+    if (name === 'mission') window.JTMissions.render();
     if (name === 'refs') window.JTRefs.render();
     if (name === 'casflow') window.JTCasFlow.renderStep();
     if (name === 'profile') {
       window.JTProfiles.renderCards('profile-list');
       window.JTProfiles.renderEditForm();
     }
-    // Kopieren-Button in Seitenkopf aktivieren
+    renderPins();
     document.querySelectorAll('[data-copy-target]').forEach(b => {
       const target = b.dataset.copyTarget;
       b.onclick = () => {
@@ -135,9 +227,8 @@
       zoneSel.appendChild(o);
     });
     zoneSel.value = window.JTProfiles.getActive().map || 'altis';
-
-    const fmtSel = document.getElementById('grid-format');
     const preset = () => window.REF.maps.find(m => m.id === zoneSel.value) || window.REF.maps[0];
+    let lastResult = null;
 
     const run = () => {
       const a = document.getElementById('grid-a').value;
@@ -148,6 +239,7 @@
       };
       if (!a && !b) {
         ['gr-dist', 'gr-bearing-mil', 'gr-bearing-deg', 'gr-format-a', 'gr-format-b'].forEach(id => set(id, '–'));
+        lastResult = null;
         return;
       }
       const r = window.GridCalc.compute(a, b, preset());
@@ -155,15 +247,14 @@
         set('gr-dist', r.error, 'bad');
         set('gr-bearing-mil', '–'); set('gr-bearing-deg', '–');
         set('gr-format-a', '–'); set('gr-format-b', '–');
+        lastResult = null;
         return;
       }
+      lastResult = { grid: b.trim(), distM: r.distM, bearingDeg: r.bearingDeg };
       set('gr-dist', window.GridCalc.fmt(r.distM) + ' m' + (r.distM >= 1000 ? '  (' + (r.distM / 1000).toFixed(2).replace('.', ',') + ' km)' : ''), 'ok');
       set('gr-bearing-mil', r.bearingMil + ' mil', '');
       set('gr-bearing-deg', r.bearingDeg.toFixed(1) + '°', '');
-      const fmtMGRS = (s) => {
-        if (!s) return '–';
-        return s.slice(0, -4) + ' ' + s.slice(-4);
-      };
+      const fmtMGRS = (s) => s ? s.slice(0, -4) + ' ' + s.slice(-4) : '–';
       set('gr-format-a', r.aMgrs ? fmtMGRS(r.aMgrs) : '–');
       set('gr-format-b', r.bMgrs ? fmtMGRS(r.bMgrs) : '–');
     };
@@ -175,6 +266,16 @@
       const p = window.JTProfiles.getActive();
       window.JTProfiles.update(p.id, { map: zoneSel.value });
       run();
+    });
+
+    document.getElementById('grid-to-brief').addEventListener('click', () => {
+      if (!lastResult) { App.toast('Erst zwei Punkte eingeben.', true); return; }
+      if (window.JTBriefs) window.JTBriefs.applyGridResult(lastResult);
+    });
+    document.getElementById('grid-copy-result').addEventListener('click', () => {
+      if (!lastResult) { App.toast('Erst zwei Punkte eingeben.', true); return; }
+      const text = `Grid ${lastResult.grid} · Distanz ${window.GridCalc.fmt(lastResult.distM)} m · Peilung ${Math.round(lastResult.bearingDeg)}° / ${window.GridCalc.toMils(lastResult.bearingDeg)} mil`;
+      App.copy(text);
     });
 
     const runSingle = () => {
@@ -222,7 +323,6 @@
       App.toast('Profil: ' + window.JTProfiles.getActive().name);
     });
 
-    // Airframe-Callsign-Datalist
     const dl = document.createElement('datalist');
     dl.id = 'airframe-cs';
     window.REF.airframesFlat.forEach(a => {
@@ -233,7 +333,6 @@
     });
     document.body.appendChild(dl);
 
-    // Live-Airframe-Info im Bearbeitungsformular
     document.getElementById('pf-cas').addEventListener('input', () => {
       window.JTProfiles.renderAirframeHint();
     });
@@ -270,11 +369,19 @@
     if (window.JTBriefs && window.JTBriefs.onProfileChange) window.JTBriefs.onProfileChange();
     if (window.JTCasFlow) window.JTCasFlow.renderPreview();
     renderDashboard();
+    renderPins();
     if (window.jtacAPI && window.jtacAPI.setTitle) {
-      window.jtacAPI.setTitle('JTAC Private Sheet – ' + window.JTProfiles.getActive().name);
+      window.jtacAPI.setTitle('JTAC Helper – ' + window.JTProfiles.getActive().name);
     }
   }
   App.onProfileChange = onProfileChange;
+
+  function onMissionChange() {
+    renderDashboard();
+    renderPins();
+    if (window.JTMissions.getActive()) window.JTMissions.render();
+  }
+  App.onMissionChange = onMissionChange;
 
   // ---------- Start ----------
   window.App = App;
@@ -283,6 +390,7 @@
     initGrid();
     initProfilesUI();
     initGoButtons();
+    initSearch();
     window.JTTimer.init();
     window.JTBriefs.init();
     window.JTCasFlow.init();

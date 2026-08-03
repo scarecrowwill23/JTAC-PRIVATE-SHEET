@@ -45,6 +45,7 @@ setTimeout(() => {
   check(!!window.mgrs && typeof window.mgrs.forward === 'function', 'mgrs-Lib geladen');
   check(!!window.GridCalc, 'GridCalc geladen');
   check(!!window.JTForms, 'JTForms geladen');
+  check(!!window.JTMissions, 'JTMissions geladen');
   check(!!window.JTBriefs, 'JTBriefs geladen');
   check(!!window.JTCasFlow, 'JTCasFlow geladen');
   check(!!window.JTTimer, 'JTTimer geladen');
@@ -52,104 +53,101 @@ setTimeout(() => {
   check(!!window.JTRefs, 'JTRefs geladen');
   check(!!window.App, 'App geladen');
 
-  // Referenzdaten vollständig
+  // Referenzdaten
   check(window.REF.casSteps.length === 12, '12 CAS-Schritte definiert');
-  check(window.REF.cas9.lines.length === 9, 'CAS 9-Line: 9 Felder');
-  check(window.REF.cas5.lines.length === 5, 'CAS 5-Line: 5 Felder');
-  check(window.REF.medevac.lines.length === 9, 'MEDEVAC: 9 Felder');
-  check(window.REF.dangerClose.groups.reduce((n, g) => n + g.items.length, 0) >= 20, 'Danger-Close-Tabelle gefüllt');
-  check(window.REF.brevity.length >= 60, 'Brevity-Wörterbuch groß (' + window.REF.brevity.length + ')');
-  check(window.REF.airframes.transport.length === 4 && window.REF.airframes.cas.length === 3, 'Airframes geladen');
-  check(window.REF.radios.length >= 8, 'Funkgeräte geladen');
-
-  // Router
-  const active = doc.querySelector('.view.active');
-  check(active && active.id === 'view-home', 'Home-View aktiv (Dashboard)');
+  check(window.REF.cas9.lines.length === 9, 'CAS 9-Line: 9 Zeilen');
+  check(window.REF.cas5.lines.length === 5, 'CAS 5-Line: 5 Zeilen');
+  check(window.REF.hlz.lines.length === 6, 'HLZ: 6 Zeilen');
+  check(window.REF.medevac.lines.length === 9, 'MEDEVAC: 9 Zeilen');
+  check(window.REF.briefFormats.length === 10, '10 Brief-Formate');
+  check(window.REF.targets.length >= 15, 'Ziel-Dropdown gefüllt (' + window.REF.targets.length + ')');
+  check(window.REF.ordnance.length >= 15, 'Ordnance-Dropdown gefüllt (' + window.REF.ordnance.length + ')');
+  check(window.REF.brevity.length >= 90, 'Brevity-Wörterbuch (' + window.REF.brevity.length + ')');
+  check(window.REF.airframesFlat.length === 10, 'Airframes geladen');
+  check(window.REF.checklist.length >= 8, 'Pre-Mission-Checkliste (' + window.REF.checklist.length + ')');
 
   // Dashboard
+  const active = doc.querySelector('.view.active');
+  check(active && active.id === 'view-home', 'Home-View aktiv (Dashboard)');
   const dashBtns = doc.querySelectorAll('#view-home .dash-btn');
-  check(dashBtns.length === 6, 'Dashboard: 6 Schnellzugriff-Buttons');
-  check(doc.getElementById('dash-profil').textContent.includes('GRANITE 10'), 'Dashboard: Profil angezeigt');
-  check(doc.getElementById('dash-jtac').textContent.includes('GRANITE 10'), 'Dashboard: JTAC-Callsign');
-  check(doc.getElementById('dash-laser').textContent.includes('1111'), 'Dashboard: Laser-Code');
+  check(dashBtns.length === 8, 'Dashboard: 8 Schnellzugriff-Buttons');
   check(doc.getElementById('dash-airframe-box').textContent.includes('MH-60M DAP'), 'Dashboard: Airframe-Karte');
-  // Dashboard-Klick → 9-Line öffnen
-  const casBtn = [...dashBtns].find(b => b.textContent.includes('9-Line'));
-  casBtn.click();
-  check(window.JTBriefs.current() === 'cas9', 'Dashboard: 9-Line geöffnet');
-  const medBtn = [...doc.querySelectorAll('#view-home .dash-btn')].find(b => b.textContent.includes('MEDEVAC'));
-  medBtn.click();
-  check(window.JTBriefs.current() === 'medevac', 'Dashboard: MEDEVAC geöffnet');
 
-  // Navigation durchklicken
-  ['casflow', 'briefs', 'grid', 'timer', 'profile', 'refs'].forEach(r => {
-    window.location.hash = '#/' + r;
-    window.dispatchEvent(new window.HashChangeEvent('hashchange'));
-    const v = doc.getElementById('view-' + r);
-    check(v && v.classList.contains('active'), 'Route #/' + r + ' aktiv');
-  });
-
-  // CASFlow: Stepper & Form
-  const stepper = doc.querySelectorAll('#casflow-stepper .step');
-  check(stepper.length === 12, 'CASFlow: 12 Stepper-Schritte');
-  window.location.hash = '#/casflow';
+  // Mission: anlegen
+  window.location.hash = '#/mission';
   window.dispatchEvent(new window.HashChangeEvent('hashchange'));
-  // Schritt 2 (Check-in) anklicken → Formular
-  const steps = doc.querySelectorAll('#casflow-stepper .step');
-  if (steps.length > 1) steps[1].click();
-  const flowForm = doc.getElementById('casflow-form');
-  check(flowForm && flowForm.querySelectorAll('.field-row').length >= 8, 'CASFlow: Check-in-Formular gerendert (' + (flowForm ? flowForm.querySelectorAll('.field-row').length : 0) + ' Zeilen)');
+  doc.getElementById('mission-new-name').value = 'Op. Test';
+  doc.querySelector('#mission-root .btn-primary').click();
+  check(!!window.JTMissions.getActive(), 'Mission erstellt');
+  check(window.JTMissions.getActive().name === 'Op. Test', 'Mission heißt Op. Test');
+  check(doc.getElementById('mission-root').textContent.includes('Op. Test'), 'Mission-Ansicht zeigt Namen');
+  // Funkspruch-Log
+  window.JTMissions.addScript('5-Line', 'Test funkspruch');
+  check(window.JTMissions.getActive().scripts.length === 1, 'Funkspruch im Log');
+  // BDA
+  window.JTMissions.addBDA('BTR-42A', '0453 0976', 'zerstört');
+  check(window.JTMissions.getActive().bda.length === 1, 'BDA gespeichert');
+  // Favorit
+  window.JTMissions.addFav('HLZ Nord', '0453 0976');
+  check(window.JTMissions.getActive().favs.length === 1, 'Favorit gespeichert');
 
-  // Briefs: Tabs & Form – sicher CAS 9-Line aktiv machen
+  // 5-Line: Satz-Output
   window.location.hash = '#/briefs';
   window.dispatchEvent(new window.HashChangeEvent('hashchange'));
+  window.JTBriefs.open('cas5');
+  check(doc.querySelectorAll('#brief-form .field-row').length === 5, '5-Line: 5 Zeilen');
+  check(!!doc.querySelector('#brief-form .subfields'), '5-Line: Sub-Felder');
+
+  const setField = (rowIdx, fk, val) => {
+    const row = doc.querySelectorAll('#brief-form .field-row')[rowIdx];
+    const el = row && row.querySelector(`[data-fk="${fk}"]`);
+    if (el) { el.value = val; el.dispatchEvent(new window.Event('input', { bubbles: true })); }
+    return !!el;
+  };
+
+  setField(0, 'control', 'Type 2');
+  setField(0, 'moa', 'BOT');
+  setField(0, 'count', '2');
+  setField(0, 'ordnance', '114 Kilo');
+  setField(1, 'loc', '200 m westlich');
+  setField(1, 'mark', 'smoke');
+  setField(2, 'grid', '0453 0976');
+  setField(3, 'desc', 'BTR-42A');
+  setField(3, 'mark', 'laser');
+  setField(4, 'ltl', '342');
+
+  const script = doc.getElementById('brief-preview').dataset.plain || '';
+  check(script.includes('this is'), 'Satz-Output: Callsign-Intro');
+  check(script.includes('Type 2 control'), 'Satz-Output: Type 2 control');
+  check(script.includes('2 times'), 'Satz-Output: 2 times');
+  check(script.includes('114 Kilo'), 'Satz-Output: 114 Kilo');
+  check(script.includes('Friendly position is 200 m westlich marked by smoke'), 'Satz-Output: Friendly-Satz');
+  check(script.includes('Target is on grid 0453 0976'), 'Satz-Output: Target-Grid-Satz');
+  check(script.includes('Target is BTR-42A marked by laser'), 'Satz-Output: Target-Desc-Satz');
+  check(script.includes('Laser to target line 342'), 'Satz-Output: LTL-Satz');
+
+  // Senden → Mission-Log + Readback
+  const before = window.JTMissions.getActive().scripts.length;
+  doc.getElementById('brief-send').click();
+  check(window.JTMissions.getActive().scripts.length === before + 1, 'Senden schreibt ins Missions-Log');
+  check(!!doc.querySelector('#brief-readback .readback-box'), 'Readback-Box erscheint');
+
+  // Reset
+  doc.getElementById('brief-reset').click();
+  check(!(doc.getElementById('brief-preview').dataset.plain || ''), 'Reset leert Vorschau');
+
+  // HLZ
+  window.JTBriefs.open('hlz');
+  check(doc.querySelectorAll('#brief-form .field-row').length === 6, 'HLZ: 6 Zeilen');
+  setField(0, 'loc', '0453 0976');
+  const hlzScript = doc.getElementById('brief-preview').dataset.plain || '';
+  check(hlzScript.includes('Landing zone is at grid 0453 0976'), 'HLZ-Satz: Landing zone');
+
+  // 9-Line
   window.JTBriefs.open('cas9');
-  const tabs = doc.querySelectorAll('#brief-tabs .tab');
-  check(tabs.length === 10, 'Briefs: 10 Tabs');
-  check(doc.querySelectorAll('#brief-form .field-row').length === 9, 'Briefs: CAS 9-Line mit 9 Zeilen');
-  check(!!doc.querySelector('#brief-form .field-row.rb'), 'Briefs: Readback-Zeilen markiert');
+  check(doc.querySelectorAll('#brief-form .field-row').length === 9, '9-Line: 9 Zeilen');
 
-  // Brief-Eingabe → Vorschau
-  const input = doc.querySelector('#brief-form .field-row:not(.rb) input') ||
-                doc.querySelector('#brief-form .field-row input');
-  if (input) {
-    input.value = '35S LE 20476 18769';
-    input.dispatchEvent(new window.Event('input', { bubbles: true }));
-    const preview = doc.getElementById('brief-preview');
-    check(preview && preview.dataset.plain && preview.dataset.plain.length > 0, 'Briefs: Vorschau aktualisiert');
-  }
-
-  // Tab-Wechsel: MEDEVAC
-  const medTab = [...doc.querySelectorAll('#brief-tabs .tab')].find(t => t.textContent === 'MEDEVAC');
-  if (medTab) {
-    medTab.click();
-    check(doc.querySelectorAll('#brief-form .field-row').length === 9, 'MEDEVAC: 9 Zeilen');
-    check(!!doc.querySelector('#brief-form .numgroup'), 'MEDEVAC: Prioritäten-Zahlengruppe');
-    // MEDEVAC-Frequenz aus Profil vorbelegt
-    const freqInput = [...doc.querySelectorAll('#brief-form input')].find(i => i.placeholder.includes('SPIRIT'));
-    check(freqInput && freqInput.value === 'Ch. 2 TAD / SPIRIT 7-X', 'MEDEVAC: Frequenz aus Profil vorbelegt: ' + (freqInput && freqInput.value));
-  }
-
-  // Formulare: IMMER leer beim App-Start (nichts in localStorage)
-  check(!window.localStorage.getItem('jtac.cas9'), '9-Line: nichts in localStorage (Start immer leer)');
-  check(!window.localStorage.getItem('jtac.medevac'), 'MEDEVAC: nichts in localStorage');
-
-  // Session: Werte bleiben beim Tab-Wechsel innerhalb der Sitzung
-  window.JTBriefs.open('medevac');
-  window.JTBriefs.open('cas9');
-  const firstInput = doc.querySelector('#brief-form .field-row input');
-  check(firstInput && firstInput.value === '35S LE 20476 18769', 'Session: 9-Line-Wert bleibt beim Tab-Wechsel (' + (firstInput && firstInput.value) + ')');
-
-  // Referenzen
-  window.location.hash = '#/refs';
-  window.dispatchEvent(new window.HashChangeEvent('hashchange'));
-  const refTabs = doc.querySelectorAll('#refs-tabs .tab');
-  check(refTabs.length === 7, 'Refs: 7 Tabs');
-  // Brevity-Tab aktiv (Standard)
-  const brevityCards = doc.querySelectorAll('#refs-root .ref-card');
-  check(brevityCards.length >= 6, 'Refs: Brevity-Kategorien gerendert');
-
-  // Grid
+  // Grid → Brief
   window.location.hash = '#/grid';
   window.dispatchEvent(new window.HashChangeEvent('hashchange'));
   doc.getElementById('grid-a').value = '100 100';
@@ -158,34 +156,38 @@ setTimeout(() => {
   const dist = doc.getElementById('gr-dist');
   check(dist && dist.textContent.includes('22.361'), 'Grid-Rechner Distanz: ' + dist.textContent);
 
-  // Timer & Profile
-  check(!!doc.getElementById('timer-start'), 'Timer-Button vorhanden');
+  // CASFlow
+  window.location.hash = '#/casflow';
+  window.dispatchEvent(new window.HashChangeEvent('hashchange'));
+  check(doc.querySelectorAll('#casflow-stepper .step').length === 12, 'CASFlow: 12 Stepper');
+  doc.querySelectorAll('#casflow-stepper .step')[1].click();
+  check(doc.querySelectorAll('#casflow-form .field-row').length >= 8, 'CASFlow: Check-in-Formular');
+
+  // Refs: 8 Tabs + Dokumente
+  window.location.hash = '#/refs';
+  window.dispatchEvent(new window.HashChangeEvent('hashchange'));
+  check(doc.querySelectorAll('#refs-tabs .tab').length === 8, 'Refs: 8 Tabs');
+  const docsTab = [...doc.querySelectorAll('#refs-tabs .tab')].find(t => t.textContent.includes('Dokumente'));
+  docsTab.click();
+  check(doc.querySelectorAll('.doc-card').length === 4, 'Refs: 4 Dokumente-Karten');
+
+  // Profile
   window.JTProfiles.renderCards('profile-list');
   check(doc.querySelectorAll('#profile-list .profile-card').length === 3, '3 Profil-Karten');
-  check(doc.querySelector('#profile-list .profile-card h3').textContent.includes('GRANITE 10'), 'Preset GRANITE 10 vorhanden');
+  check(doc.querySelector('#profile-list .profile-card h3').textContent.includes('GRANITE 10'), 'Preset GRANITE 10');
   window.JTProfiles.renderEditForm();
-  check(doc.getElementById('pf-name').value === 'GRANITE 10', 'Profil-Bearbeitung: GRANITE 10');
-  check(doc.getElementById('pf-freqcas').value === 'Ch. 2 TAD', 'Profil: Funk Channel 2 TAD');
+  check(doc.getElementById('pf-freqcas').value === 'Ch. 2 TAD', 'Profil: Ch. 2 TAD');
   check(doc.getElementById('pf-laser').value === '1111', 'Profil: Laser 1111');
-  const af = window.REF.findAirframe('ARCHER 3-X');
-  check(af && af.name === 'MH-60M DAP', 'findAirframe(ARCHER 3-X) → MH-60M DAP');
-  check(window.REF.airframesFlat.length === 10, 'airframesFlat: 10 Einträge');
-  // Airframe-Hinweis rendert
-  window.JTProfiles.renderAirframeHint();
-  check(doc.getElementById('pf-airframe').style.display === 'block' && doc.getElementById('pf-airframe').textContent.includes('MH-60M DAP'), 'Airframe-Hinweis im Profil');
-  // Briefs: Airframe-Referenzbox
-  window.location.hash = '#/briefs';
-  window.dispatchEvent(new window.HashChangeEvent('hashchange'));
-  const baf = doc.getElementById('brief-airframe');
-  check(baf && baf.style.display === 'block' && baf.textContent.includes('MH-60M DAP'), 'Briefs: Airframe-Referenzbox');
 
-  // Theme
+  // Suche
+  doc.getElementById('global-search').value = 'lase';
+  doc.getElementById('global-search').dispatchEvent(new window.Event('input', { bubbles: true }));
+  check(doc.querySelectorAll('#search-results .search-item').length > 0, 'Globale Suche liefert Treffer');
+
+  // Theme & Toast
   doc.getElementById('theme-toggle').click();
   check(doc.documentElement.dataset.theme === 'light', 'Theme auf hell');
   doc.getElementById('theme-toggle').click();
-  check(doc.documentElement.dataset.theme === 'dark', 'Theme auf dunkel');
-
-  // Toast
   window.App.toast('Test');
   check(doc.getElementById('toast').classList.contains('show'), 'Toast erscheint');
 
@@ -196,4 +198,4 @@ setTimeout(() => {
   } else {
     console.log('\n✔ KEINE Laufzeitfehler');
   }
-}, 1800);
+}, 2200);

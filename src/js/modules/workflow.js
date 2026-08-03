@@ -1,22 +1,32 @@
 // ============================================================
-// JTAC Private Sheet – 12-Schritte-CAS Workflow
+// JTAC Helper – 12-Schritte-CAS Workflow
 // Geführter Ablauf: Check-in → SITREP (TEFACHR) → Game Plan →
-// Brief → Remarks → BDA; sammelt alles in einem Funkspruch.
+// Brief (5/9-Line als Satz-Output) → Remarks → BDA
 // ============================================================
 
 (function () {
   'use strict';
 
-  const LS = 'jtac.casflow';
   const STEPS = window.REF.casSteps;
   let current = 0;
-  let forms = {}; // step.form -> Form
-  let session = {}; // In-Memory: nichts vom letzten Einsatz beim App-Start
+  let forms = {};   // step.form -> Form
+  let session = {}; // In-Memory
 
-  function load() {
-    return session;
-  }
+  function load() { return session; }
   function save(v) { session = v; }
+
+  // Alte einfache Feldstrukturen in Lines umwandeln
+  function simpleLines(fields, startN) {
+    return fields.map((f, i) => ({
+      n: startN + i,
+      key: f.key,
+      short: (f.short || f.label.split(' ')[0]),
+      label: f.label,
+      ph: f.ph,
+      help: f.help,
+      select: f.select
+    }));
+  }
 
   function buildStepForm(step) {
     const container = document.getElementById('casflow-form');
@@ -25,19 +35,69 @@
     if (step.form === 'brief') { buildBriefPicker(); return; }
 
     const FIELDS = {
-      checkin: { def: { name: 'Check-in', lines: window.REF.checkinFields.map((f, i) => ({ n: i + 1, key: f.key, short: f.label.split(' ')[0], label: f.label, ph: f.ph, help: f.help })) }, header: 'CAS Check-in' },
-      tefachr: { def: { name: 'SITREP', lines: window.REF.tefachrFields.map((f, i) => ({ n: i + 1, key: f.key, short: f.label.split(' ')[0], label: f.label, ph: f.ph, help: f.help })) }, header: 'Situation Update (TEFACHR)' },
-      gameplan: { def: { name: 'Game Plan', lines: window.REF.gameplanFields.map((f, i) => ({ n: i + 1, key: f.key, short: f.short || f.label.split(' ')[0], label: f.label, ph: f.ph, select: f.select, help: f.help })) }, header: 'Game Plan' },
-      remarks: { def: { name: 'Remarks', lines: window.REF.remarksFields.map((f, i) => ({ n: i + 1, key: f.key, short: f.label.split(' ')[0], label: f.label, ph: f.ph, help: f.help })) }, header: 'Remarks & Restrictions' },
-      bda: { def: { name: 'BDA', lines: window.REF.bdaFields.map((f, i) => ({ n: i + 1, key: f.key, short: f.label, label: f.label, ph: f.ph })) }, header: 'BDA (SALT-R)' }
+      checkin:  { fields: window.REF.checkinFields },
+      tefachr:  { fields: window.REF.tefachrFields },
+      gameplan: { fields: window.REF.gameplanFields },
+      remarks:  { fields: window.REF.remarksFields },
+      bda:      { fields: window.REF.bdaFields }
     };
-
     const cfg = FIELDS[step.form];
+    const def = { name: step.title, lines: simpleLines(cfg.fields, 1) };
     const all = load();
-    forms[step.form] = window.JTForms.initBriefForm('casflow-form', cfg.def, {
+    forms[step.form] = window.JTForms.initBriefForm('casflow-form', def, {
       load: () => all[step.form] || {},
       save: (v) => { const d = load(); d[step.form] = v; save(d); },
       onChange: renderPreview
+    });
+  }
+
+  function buildBriefPicker() {
+    const container = document.getElementById('casflow-form');
+    container.innerHTML = '';
+    const all = load();
+    const b = all.brief || {};
+    const type = b.type || 'cas5';
+
+    const row = document.createElement('div');
+    row.className = 'field-row';
+    const typeField = document.createElement('div');
+    typeField.className = 'field';
+    const lbl = document.createElement('label');
+    lbl.className = 'field-label';
+    lbl.textContent = 'Brief-Typ';
+    const sel = document.createElement('select');
+    sel.className = 'select';
+    [['cas5', '5-Line (Rotary / AC-130)'], ['cas9', '9-Line (Fixed-Wing)']].forEach(([v, t]) => {
+      const o = document.createElement('option');
+      o.value = v; o.textContent = t;
+      sel.appendChild(o);
+    });
+    sel.value = type;
+    typeField.appendChild(lbl);
+    typeField.appendChild(sel);
+    row.appendChild(typeField);
+    container.appendChild(row);
+
+    const sub = document.createElement('div');
+    sub.id = 'casflow-brief-sub';
+    container.appendChild(sub);
+
+    const renderSub = () => {
+      sub.innerHTML = '';
+      const def = window.REF[sel.value];
+      forms.brief = window.JTForms.initBriefForm('casflow-brief-sub', def, {
+        load: () => b,
+        save: (v) => { const d = load(); d.brief = { ...b, ...v, type: sel.value }; save(d); },
+        onChange: renderPreview
+      });
+    };
+    renderSub();
+    sel.addEventListener('change', () => {
+      const d = load();
+      d.brief = { ...b, type: sel.value };
+      save(d);
+      buildBriefPicker();
+      renderPreview();
     });
   }
 
@@ -47,7 +107,6 @@
     document.getElementById('casflow-body').textContent = step.body;
     buildStepForm(step);
 
-    // Stepper
     const stepper = document.getElementById('casflow-stepper');
     stepper.innerHTML = '';
     STEPS.forEach((s, i) => {
@@ -66,99 +125,43 @@
   function renderPreview() {
     const pre = document.getElementById('casflow-preview');
     const parts = [];
-    const p = window.JTProfiles.getActive();
     const all = load();
+    const p = window.JTProfiles.getActive();
 
     if (all.checkin) {
-      const c = all.checkin;
-      parts.push(`CAS CHECK-IN (${p.jtac || 'JTAC'})`);
-      window.REF.checkinFields.forEach(f => { if (c[f.key]) parts.push(`• ${f.label}: ${c[f.key]}`); });
+      parts.push('CAS CHECK-IN (' + (p.jtac || 'JTAC') + ')');
+      window.REF.checkinFields.forEach(f => { if (all.checkin[f.key]) parts.push('• ' + f.label + ': ' + all.checkin[f.key]); });
     }
     if (all.tefachr) {
-      const t = all.tefachr;
-      parts.push(`SITREP (${p.jtac || 'JTAC'})`);
-      window.REF.tefachrFields.forEach(f => { if (t[f.key]) parts.push(`• ${f.label}: ${t[f.key]}`); });
+      parts.push('SITREP (' + (p.jtac || 'JTAC') + ')');
+      window.REF.tefachrFields.forEach(f => { if (all.tefachr[f.key]) parts.push('• ' + f.label + ': ' + all.tefachr[f.key]); });
     }
     if (all.gameplan) {
-      const g = all.gameplan;
       parts.push('GAME PLAN');
-      window.REF.gameplanFields.forEach(f => { if (g[f.key]) parts.push(`• ${f.label}: ${g[f.key]}`); });
+      window.REF.gameplanFields.forEach(f => { if (all.gameplan[f.key]) parts.push('• ' + f.label + ': ' + all.gameplan[f.key]); });
     }
     if (all.brief) {
       const b = all.brief;
-      parts.push('CAS BRIEF');
-      if (b.type === 'cas9') {
-        parts.push(`${p.jtac || 'JTAC'} – 9-Line, ready to copy.`);
-        window.REF.cas9.lines.forEach(l => { if (b[l.key]) parts.push(`${l.n}. ${l.short}: ${b[l.key]}`); });
-      } else if (b.type === 'cas5') {
-        parts.push(`${p.jtac || 'JTAC'} – 5-Line, über.`);
-        window.REF.cas5.lines.forEach(l => { if (b[l.key]) parts.push(`${l.n}. ${l.short}: ${b[l.key]}`); });
-      }
+      const type = b.type === 'cas9' ? 'cas9' : 'cas5';
+      const def = window.REF[type];
+      const values = { ...b };
+      values.pilot = b.pilot || p.cas || 'Pilot';
+      const script = window.JTForms.buildScript(def, values, { profile: p });
+      if (script) parts.push('CAS BRIEF', script);
     }
     if (all.remarks) {
-      const r = all.remarks;
       parts.push('REMARKS & RESTRICTIONS');
-      window.REF.remarksFields.forEach(f => { if (r[f.key]) parts.push(`• ${f.label}: ${r[f.key]}`); });
+      window.REF.remarksFields.forEach(f => { if (all.remarks[f.key]) parts.push('• ' + f.label + ': ' + all.remarks[f.key]); });
     }
     if (all.bda) {
-      const d = all.bda;
       parts.push('BDA (SALT-R)');
-      window.REF.bdaFields.forEach(f => { if (d[f.key]) parts.push(`• ${f.label}: ${d[f.key]}`); });
+      window.REF.bdaFields.forEach(f => { if (all.bda[f.key]) parts.push('• ' + f.label + ': ' + all.bda[f.key]); });
     }
 
     const text = parts.join('\n');
     pre.textContent = text || pre.dataset.blank || '';
     pre.dataset.plain = text || '';
     pre.classList.toggle('blank', !text);
-  }
-
-  /** Mini-Brief-Auswahl für Schritt 5 (9-Line vs 5-Line). */
-  function buildBriefPicker() {
-    const container = document.getElementById('casflow-form');
-    container.innerHTML = '';
-    const all = load();
-    const b = all.brief || {};
-
-    const row = document.createElement('div');
-    row.className = 'field-row';
-    const typeField = document.createElement('div');
-    typeField.className = 'field';
-    const lbl = document.createElement('label');
-    lbl.className = 'field-label';
-    lbl.textContent = 'Brief-Typ';
-    const sel = document.createElement('select');
-    sel.className = 'select';
-    [['cas9', '9-Line CAS (Fixed-Wing)'], ['cas5', '5-Line CAS (Rotary / AC-130)']].forEach(([v, t]) => {
-      const o = document.createElement('option');
-      o.value = v; o.textContent = t; sel.appendChild(o);
-    });
-    sel.value = b.type || 'cas9';
-    typeField.appendChild(lbl); typeField.appendChild(sel);
-    row.appendChild(typeField);
-    container.appendChild(row);
-
-    const def = window.REF[b.type === 'cas5' ? 'cas5' : 'cas9'];
-    const sub = document.createElement('div');
-    sub.id = 'casflow-brief-sub';
-    container.appendChild(sub);
-
-    const renderSub = () => {
-      sub.innerHTML = '';
-      const subForm = window.JTForms.initBriefForm('casflow-brief-sub', def, {
-        load: () => b,
-        save: (v) => { const d = load(); d.brief = { ...b, ...v, type: sel.value }; save(d); },
-        onChange: renderPreview
-      });
-      forms.brief = subForm;
-    };
-    renderSub();
-    sel.addEventListener('change', () => {
-      const d = load();
-      d.brief = { ...b, type: sel.value };
-      save(d);
-      renderStep();
-      renderPreview();
-    });
   }
 
   function init() {

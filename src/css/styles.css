@@ -582,6 +582,192 @@ select.select option { background: var(--panel); }
 .af-box .af-row:last-child { border-bottom: 1px solid var(--border); }
 
 /* ============================================================
+   Sub-Felder (mehrere Eingaben pro Zeile)
+   ============================================================ */
+.subfields { display: flex; flex-wrap: wrap; gap: 10px; }
+.subfield { display: flex; flex-direction: column; gap: 4px; flex: 1 1 140px; min-width: 120px; }
+.subfield .field-label.sub { font-size: 11px; text-transform: none; }
+.subfield .input.num { width: 70px; }
+
+/* ============================================================
+   Schnell-Buttons & Phrasen
+   ============================================================ */
+.quick-row { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 4px; }
+.quick-btn, .phrase-btn {
+  background: var(--panel-2);
+  border: 1px solid var(--border-strong);
+  color: var(--text);
+  border-radius: 16px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-family: var(--mono);
+  cursor: pointer;
+  transition: all .1s;
+}
+.quick-btn:hover, .phrase-btn:hover { border-color: var(--accent); color: var(--accent); }
+.phrase-btn { font-family: var(--font); font-size: 11.5px; }
+
+/* ============================================================
+   Readback-Abhaken
+   ============================================================ */
+.readback-box {
+  margin-top: 16px;
+  border: 1px dashed var(--danger);
+  border-radius: 8px;
+  padding: 12px 14px;
+  background: color-mix(in srgb, var(--danger) 5%, transparent);
+}
+.readback-box > b { color: var(--danger); font-size: 13px; }
+.readback-rows { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.check-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13.5px;
+  padding: 4px 0;
+  cursor: pointer;
+}
+.check-item input[type=checkbox] { width: 17px; height: 17px; accent-color: var(--accent); }
+
+/* ============================================================
+   Missionen
+   ============================================================ */
+.mission-grid { display: flex; flex-direction: column; gap: 16px; }
+.mission-panel { min-width: 0; }
+.log-box { display: flex; flex-direction: column; gap: 10px; max-height: 420px; overflow-y: auto; }
+.log-entry {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  padding: 10px 12px;
+}
+.log-head { display: flex; justify-content: space-between; gap: 10px; font-size: 12px; margin-bottom: 6px; }
+.log-head b { color: var(--accent); }
+.log-head span { color: var(--text-dim); }
+.log-text {
+  font-family: var(--mono);
+  font-size: 12.5px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  margin: 0 0 6px;
+  color: var(--text);
+  max-height: 200px;
+  overflow-y: auto;
+}
+.btn.small { padding: 3px 10px; font-size: 11.5px; }
+
+.bda-list, .fav-list { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; }
+.bda-entry, .fav-entry {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg);
+  padding: 8px 10px;
+  font-size: 13px;
+}
+.bda-entry b { color: var(--accent-2); }
+.bda-entry span { color: var(--text-dim); font-size: 11.5px; }
+.fav-entry .mono { font-family: var(--mono); color: var(--text-dim); font-size: 12px; }
+.fav-entry > div:last-child { flex-shrink: 0; }
+
+/* ============================================================
+   Globale Suche
+   ============================================================ */
+.topbar-center { position: relative; flex: 1 1 320px; max-width: 460px; }
+.search-input { width: 100%; }
+.search-results {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  background: var(--panel);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  box-shadow: var(--shadow);
+  z-index: 100;
+  max-height: 320px;
+  overflow-y: auto;
+  display: none;
+}
+.search-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  padding: 8px 12px;
+  cursor: pointer;
+  color: var(--text);
+  font-size: 13px;
+}
+.search-item:hover { background: var(--panel-2); }
+.search-item b { color: var(--accent); }
+.search-item span { float: right; color: var(--text-dim); font-size: 11px; text-transform: uppercase; }
+.search-item div { color: var(--text-dim); font-size: 12px; }
+
+/* ============================================================
+   Sidebar-Pins
+   ============================================================ */
+.nav-pins {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.pin-head {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-dim);
+  padding: 2px 8px;
+}
+.pin-btn {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  padding: 6px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  text-align: left;
+}
+.pin-btn:hover { border-color: var(--accent); color: var(--accent); }
+.pin-hint { font-size: 11px; color: var(--text-dim); padding: 2px 8px; }
+
+/* ============================================================
+   Dokumente (PDF-Viewer)
+   ============================================================ */
+.docs-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+.doc-card {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+}
+.doc-card h3 { margin: 0 0 6px; font-size: 15px; }
+.doc-card p { color: var(--text-dim); font-size: 12.5px; margin: 0 0 12px; line-height: 1.5; }
+.doc-viewer {
+  grid-column: 1 / -1;
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.doc-frame {
+  width: 100%;
+  height: 75vh;
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  background: #333;
+}
+
+/* ============================================================
    Toast
    ============================================================ */
 .toast {

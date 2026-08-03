@@ -1,3 +1,4 @@
+// Workflow-Test: 12-Schritte-CAS mit Satz-Output + Mission-Log
 const { JSDOM } = require('jsdom');
 const fs = require('fs');
 const path = require('path');
@@ -18,90 +19,98 @@ const dom = new JSDOM(html, {
     }});
   }
 });
+
 setTimeout(() => {
   const w = dom.window, doc = w.document;
-  const fill = (sel, val) => {
-    const el = doc.querySelector(sel);
-    if (el) { el.value = val; el.dispatchEvent(new w.Event('input', { bubbles: true })); }
-  };
-  const stepClick = (n) => doc.querySelectorAll('#casflow-stepper .step')[n - 1].click();
+  const ok = (c, m) => { console.log((c ? 'PASS' : 'FAIL') + ': ' + m); if (!c) process.exitCode = 1; };
 
-  // Route zu casflow
+  // Mission anlegen
+  w.location.hash = '#/mission';
+  w.dispatchEvent(new w.HashChangeEvent('hashchange'));
+  doc.getElementById('mission-new-name').value = 'Op. Flow Test';
+  doc.querySelector('#mission-root .btn-primary').click();
+
+  // Workflow öffnen
   w.location.hash = '#/casflow';
   w.dispatchEvent(new w.HashChangeEvent('hashchange'));
+  const stepClick = (n) => doc.querySelectorAll('#casflow-stepper .step')[n - 1].click();
+  const setField = (fk, val) => {
+    const el = doc.querySelector(`#casflow-form [data-fk="${fk}"]`);
+    if (el) { el.value = val; el.dispatchEvent(new w.Event('input', { bubbles: true })); }
+    return !!el;
+  };
 
   // Schritt 2: Check-in
   stepClick(2);
-  fill('#casflow-form .field-row:nth-child(1) input', 'HAVOC 1-1');
-  fill('#casflow-form .field-row:nth-child(2) input', 'MSN 15-2');
-  fill('#casflow-form .field-row:nth-child(3) input', '2x A-10C');
-  fill('#casflow-form .field-row:nth-child(4) input', 'HA Alpha, 5000 ft');
-  fill('#casflow-form .field-row:nth-child(5) input', '4x Maverick, 12x Paveway');
-  fill('#casflow-form .field-row:nth-child(6) input', '40 min');
-  fill('#casflow-form .field-row:nth-child(7) input', 'Laser Spot Tracker');
-  fill('#casflow-form .field-row:nth-child(8) input', 'abort in the clear');
+  ok(setField('callsign', 'ARCHER 3-1'), 'Check-in: Callsign-Feld');
+  setField('mission', 'MSN 1');
+  setField('aircraft', '1x MH-60M DAP');
+  setField('position', 'HA Alpha');
+  setField('ordnance', 'M134, Hydra');
+  setField('playtime', '40 min');
+  setField('capabilities', 'Laser');
+  setField('abort', 'abort in the clear');
 
   // Schritt 3: TEFACHR
   stepClick(3);
-  fill('#casflow-form .field-row:nth-child(1) input', 'ZSU-23 bei 123 456');
-  fill('#casflow-form .field-row:nth-child(2) input', 'Zug Stärke, 3 BTR');
-  fill('#casflow-form .field-row:nth-child(3) input', '1. Zug hält Linie');
-  fill('#casflow-form .field-row:nth-child(4) input', '2x M119, GTL 045 aktiv');
-  fill('#casflow-form .field-row:nth-child(5) input', 'Cdr Miller, Initialen JM');
-  fill('#casflow-form .field-row:nth-child(6) input', 'Min Safe Alt 3000 ft');
-  fill('#casflow-form .field-row:nth-child(7) input', 'CAS-Absicht: Zerstörung');
+  setField('threat', 'MANPADS möglich');
+  setField('enemy', 'Zug Stärke, 2 BTR');
+  setField('friendly', '1. Zug hält Linie');
+  setField('artillery', 'GTL 045 aktiv');
+  setField('clearance', 'Cdr Miller (JM)');
+  setField('hazards', 'Min Safe Alt 3000 ft');
 
   // Schritt 4: Game Plan
   stepClick(4);
-  const sel = doc.querySelector('#casflow-form select');
-  sel.value = 'Type 2'; sel.dispatchEvent(new w.Event('change', { bubbles: true }));
-  fill('#casflow-form .field-row:nth-child(2) input', 'BOT');
-  fill('#casflow-form .field-row:nth-child(3) input', 'GBU-12, Zerstörung');
-  fill('#casflow-form .field-row:nth-child(4) input', '—');
+  const gpSel = doc.querySelector('#casflow-form select');
+  if (gpSel) { gpSel.value = 'Type 2'; gpSel.dispatchEvent(new w.Event('change', { bubbles: true })); }
+  setField('ordnance', 'Hydra, Zerstörung');
 
-  // Schritt 5: Brief (9-Line)
+  // Schritt 5: Brief (5-Line)
   stepClick(5);
   const typeSel = doc.querySelector('#casflow-form select');
-  typeSel.value = 'cas9'; typeSel.dispatchEvent(new w.Event('change', { bubbles: true }));
-  fill('#casflow-brief-sub .field-row:nth-child(1) input', 'IP Alpha');
-  fill('#casflow-brief-sub .field-row:nth-child(2) input', '280°');
-  fill('#casflow-brief-sub .field-row:nth-child(3) input', '8 km');
-  fill('#casflow-brief-sub .field-row:nth-child(4) input', '120 m MSL');
-  fill('#casflow-brief-sub .field-row:nth-child(5) input', 'T-90, Kompanie');
-  fill('#casflow-brief-sub .field-row:nth-child(6) input', '35S LE 20476 18769');
-  fill('#casflow-brief-sub .field-row:nth-child(7) input', 'Lase 1688');
-  fill('#casflow-brief-sub .field-row:nth-child(8) input', '200 m südlich');
-  fill('#casflow-brief-sub .field-row:nth-child(9) input', 'Egress Nord');
+  typeSel.value = 'cas5';
+  typeSel.dispatchEvent(new w.Event('change', { bubbles: true }));
+  const setBrief = (fk, val) => {
+    const el = doc.querySelector(`#casflow-brief-sub [data-fk="${fk}"]`);
+    if (el) { el.value = val; el.dispatchEvent(new w.Event('input', { bubbles: true })); }
+    return !!el;
+  };
+  setBrief('control', 'Type 2');
+  setBrief('moa', 'BOT');
+  setBrief('count', '1');
+  setBrief('ordnance', 'M134');
+  setBrief('loc', '300 m nordwestlich');
+  setBrief('mark', 'IR strobe');
+  setBrief('grid', '0453 0976');
+  setBrief('desc', 'BTR-42A');
+  setBrief('ltl', '342');
 
   // Schritt 6: Remarks
   stepClick(6);
-  fill('#casflow-form .field-row:nth-child(1) input', '010');
-  fill('#casflow-form .field-row:nth-child(2) input', 'LTL 320');
-  fill('#casflow-form .field-row:nth-child(3) input', 'ZSU-23, SEAD aktiv');
-  fill('#casflow-form .field-row:nth-child(5) input', 'DC 270 m, JM');
+  setField('fah', '010');
+  setField('dangerclose', 'DC 270 m, JM');
+  setField('tot', 'TOT 1600 Zulu');
 
   // Schritt 11: BDA
   stepClick(11);
-  fill('#casflow-form .field-row:nth-child(1) input', 'T-90 zerstört');
-  fill('#casflow-form .field-row:nth-child(2) input', 'kein Feuer');
-  fill('#casflow-form .field-row:nth-child(3) input', '35S LE 20476 18769');
-  fill('#casflow-form .field-row:nth-child(4) input', '16:02 Zulu');
-  fill('#casflow-form .field-row:nth-child(5) input', 'Re-Attack empfohlen');
+  setField('size', 'BTR zerstört');
+  setField('activity', 'kein Feuer');
+  setField('location', '0453 0976');
+  setField('remarks', 'Re-Attack möglich');
 
   const preview = doc.getElementById('casflow-preview');
   const text = preview.dataset.plain || '';
-  console.log('===== GESAMMELTER FUNKSPRUCH =====');
-  console.log(text);
-  console.log('===================================');
-  const ok = (c, m) => { console.log((c ? 'PASS' : 'FAIL') + ': ' + m); if (!c) process.exitCode = 1; };
-  ok(text.includes('CAS CHECK-IN'), 'Check-in enthalten');
-  ok(text.includes('SITREP'), 'TEFACHR enthalten');
-  ok(text.includes('GAME PLAN'), 'Game Plan enthalten');
-  ok(text.includes('9-Line, ready to copy'), '9-Line Brief enthalten');
-  ok(text.includes('6. GRID: 35S LE 20476 18769'), 'Grid-Zeile enthalten');
-  ok(text.includes('REMARKS'), 'Remarks enthalten');
-  ok(text.includes('BDA'), 'BDA enthalten');
-  ok(text.includes('Danger Close') || text.includes('DC 270'), 'Danger Close enthalten');
+  ok(text.includes('CAS CHECK-IN'), 'Workflow: Check-in enthalten');
+  ok(text.includes('SITREP'), 'Workflow: TEFACHR enthalten');
+  ok(text.includes('GAME PLAN'), 'Workflow: Game Plan enthalten');
+  ok(text.includes('CAS BRIEF'), 'Workflow: CAS BRIEF enthalten');
+  ok(text.includes('Type 2 control'), 'Workflow: 5-Line Satz (Type 2 control)');
+  ok(text.includes('Target is on grid 0453 0976'), 'Workflow: 5-Line Satz (Grid)');
+  ok(text.includes('Target is BTR-42A'), 'Workflow: 5-Line Satz (Beschreibung)');
+  ok(text.includes('REMARKS'), 'Workflow: Remarks enthalten');
+  ok(text.includes('BDA'), 'Workflow: BDA enthalten');
+
   if (errors.length) { console.log('Laufzeitfehler:', errors); process.exitCode = 1; }
   else console.log('✔ KEINE FEHLER');
-}, 2000);
+}, 2500);

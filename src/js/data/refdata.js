@@ -1,5 +1,5 @@
 // ============================================================
-// JTAC Private Sheet – Referenzdaten
+// JTAC Helper – Referenzdaten
 // Quellen: CGF 160th SOAR (Airframes), JTAC Protocols 24th STS,
 // ATG Reference Sheet, Ghost's JTAC Cheatsheet, TFW 18E Course
 // ============================================================
@@ -19,235 +19,402 @@ const REF = {
   ],
 
   // ============================================================
-  // 12 SCHRITTE DES CAS (Haupt-Workflow)
+  // 12 SCHRITTE DES CAS
   // ============================================================
   casSteps: [
     { n: 1, title: 'Routing & Safety of Flight',
-      body: '3D-Richtung von der aktuellen Position zum Haltepunkt (HA/CP). Haltepunkt & Höhe nennen, Kontaktstelle angeben. Andere Flugzeuge auf Station, Flugabwehr-Bedrohungen, Safety-of-Flight-Themen, aktive Gun-Target-Line (GTL) mit Azimut/Lage.'
-    },
+      body: '3D-Richtung von der aktuellen Position zum Haltepunkt (HA/CP). Haltepunkt & Höhe nennen, Kontaktstelle angeben. Andere Flugzeuge auf Station, Flugabwehr-Bedrohungen, Safety-of-Flight-Themen, aktive Gun-Target-Line (GTL) mit Azimut/Lage.' },
     { n: 2, title: 'CAS Check-in',
       body: 'Pilot meldet sich: Callsign · Missionsnummer · Anzahl & Typ der Luftfahrzeuge · Position & Höhe · Bewaffnung · Playtime / Time-on-Station · Fähigkeiten (Sensoren, Video-Downlink, SITREPs) · Abort-Code.',
-      form: 'checkin'
-    },
+      form: 'checkin' },
     { n: 3, title: 'Situation Update (TEFACHR)',
       body: 'Lage-Update im TEFACHR-Format: Threat, Enemy, Friendly, Artillery, Clearance Authority, Hazards, Remarks & Restrictions.',
-      form: 'tefachr'
-    },
+      form: 'tefachr' },
     { n: 4, title: 'Game Plan',
       body: 'Kontrolltyp (1/2/3), Method of Attack (BOT/BOC), gewünschte Wirkung / Bewaffnung, Intervall.',
-      form: 'gameplan'
-    },
+      form: 'gameplan' },
     { n: 5, title: 'CAS Brief',
       body: '9-Line (Fixed-Wing) oder 5-Line (Rotary/AC-130) übermitteln. Linien 4 & 6 (9-Line) bzw. 2 & 3 (5-Line) sind Pflicht-Readbacks.',
-      form: 'brief'
-    },
+      form: 'brief' },
     { n: 6, title: 'Remarks & Restrictions',
       body: 'LTL/PTL, Final Attack Heading, Bedrohungen & SEAD, Airspace Coordination Areas, Danger Close + Initialen, TOT/TTT, Post-Launch-Abort, gewünschte Bewaffnung.',
-      form: 'remarks'
-    },
+      form: 'remarks' },
     { n: 7, title: 'Readbacks',
-      body: 'Pilot liest Pflicht-Zeilen zurück (9-Line: 4, 6 + Restriktionen; 5-Line: 2, 3 + Restriktionen). Mit „Good readback" bestätigen oder korrigieren.'
-    },
+      body: 'Pilot liest Pflicht-Zeilen zurück (9-Line: 4, 6 + Restriktionen; 5-Line: 2, 3 + Restriktionen). Mit „Good readback" bestätigen oder korrigieren.' },
     { n: 8, title: 'Target Correlation / Talk-On',
-      body: 'Sicherstellen, dass Pilot & JTAC dasselbe Ziel sehen: Talk-On in Klartext, erweiterte Zielbeschreibung, Markierung, Video-Downlink.'
-    },
+      body: 'Sicherstellen, dass Pilot & JTAC dasselbe Ziel sehen: Talk-On in Klartext, erweiterte Zielbeschreibung, Markierung, Video-Downlink.' },
     { n: 9, title: 'Attack',
-      body: 'Pilot „push" zum Ziel geben → „inbound" → „Cleared Hot" (Typ 1/2) oder „Cleared to Engage" (Typ 3) → Pilot meldet „Pickle" / „Rifle" / „Guns".'
-    },
+      body: 'Pilot „push" zum Ziel geben → „inbound" → „Cleared Hot" (Typ 1/2) oder „Cleared to Engage" (Typ 3) → Pilot meldet „Pickle" / „Rifle" / „Guns".' },
     { n: 10, title: 'Assess Effects',
-      body: 'Einschlag beobachten („Splash"), Schaden bewerten. „Shack" = Treffer im Ziel, „Good effects" / „No effects".'
-    },
+      body: 'Einschlag beobachten („Splash"), Schaden bewerten. „Shack" = Treffer im Ziel, „Good effects" / „No effects".' },
     { n: 11, title: 'BDA (SALT-R)',
       body: 'Battle Damage Assessment im SALT-R-Format: Size, Activity, Location, Time, Remarks. Ggf. Re-Attack mit Änderungen anordnen.',
-      form: 'bda'
-    },
+      form: 'bda' },
     { n: 12, title: 'Routing & Safety of Flight',
-      body: 'Route aus dem Kampfgebiet zurück zu HA/HP geben, Safety-of-Flight-Briefing (wie Schritt 1).'
-    }
+      body: 'Route aus dem Kampfgebiet zurück zu HA/HP geben, Safety-of-Flight-Briefing (wie Schritt 1).' }
   ],
 
   // ============================================================
-  // BRIEF-FORMATE (Felder pro Format)
-  // type: text | select | group
-  // rb: mandatory readback
+  // FORMATE MIT SATZ-VORLAGEN
+  // Jede Zeile hat: fields (Sub-Felder) + sent (Satz-Erzeugung)
+  // sent(v, ctx) → string|null  (null/leer = Zeile fällt weg)
+  // ctx = { all: alle Werte, profile, pilot, jtac }
   // ============================================================
 
-  // ---------- 9-Line CAS (Fixed-Wing) – ATG-Format ----------
-  cas9: {
-    name: '9-Line CAS',
-    use: 'Fixed-Wing (Kampfjets, Bomber)',
-    header: '9-Line CAS, ready to copy.',
-    lines: [
-      { n: 1, key: 'cp',   label: 'Control Point', short: 'IP/BP/Keyhole', ph: 'z. B. IP Alpha / BP Bravo / Keyhole 5', help: 'Initial Point (FW), Battle Position (RW) oder Keyhole-Methode.' },
-      { n: 2, key: 'dir',  label: 'Target Direction & Offset', short: 'Dir', ph: 'z. B. 280° / rechts 500 m', help: 'Angriffsrichtung in Grad, optional Offset links/rechts. Kardinal = 45°-Bogen.' },
-      { n: 3, key: 'dist', label: 'Target Distance (vom Control Point)', short: 'Dist', ph: 'z. B. 8 km', help: 'Entfernung IP/BP → Ziel (Metrisch).' },
-      { n: 4, key: 'elev', label: 'Target Altitude (MSL)', short: 'ELV', ph: 'z. B. 120 m MSL', rb: true, help: 'Zielhöhe über Meer (Mean Sea Level) – Pflicht-Readback.' },
-      { n: 5, key: 'desc', label: 'Target Description', short: 'DESC', ph: 'z. B. T-90, Kompanie Infanterie', help: 'Was sieht der Pilot? Typ, Anzahl, Deckung, Kontext ("im offenen Gelände", "3. Stock").' },
-      { n: 6, key: 'grid', label: 'Target Coordinates', short: 'GRID', ph: 'z. B. 35S VA 12345 67890', rb: true, help: 'Koordinaten des Ziels – 6-stellig (BOT) oder 8–10-stellig (BOC) – Pflicht-Readback.' },
-      { n: 7, key: 'mark', label: 'Marker Type', short: 'Mark', ph: 'z. B. Lase 1688 / rot Rauch / IR', help: 'Laser-Code, Rauchfarbe, IR-Pointer, GPS-Koordinaten.' },
-      { n: 8, key: 'friend', label: 'Friendly Position', short: 'Friend', ph: 'z. B. 200 m südlich, kein Kontakt', rb: true, help: 'Position eigener Kräfte relativ zum Ziel – keine eigenen Grids nennen! – Pflicht-Readback.' },
-      { n: 9, key: 'egress', label: 'Egress & Routing', short: 'Egress', ph: 'z. B. Egress Nord, dann HA Alpha', help: 'Kardinalrichtungen oder vorher festgelegte Punkte.' }
-    ]
-  },
-
-  // ---------- 5-Line CAS (Rotary / AC-130) – ATG-Format ----------
+  // ---------- 5-Line CAS (Rotary / AC-130) – FOKUS ----------
   cas5: {
     name: '5-Line CAS',
     use: 'Rotary-Wing (Helikopter) & AC-130',
-    header: '5-Line, über.',
+    briefName: '5-Line',
+    intro: (ctx) => [
+      `${ctx.pilot}, this is ${ctx.jtac}, ready for 5-Line?`,
+      `${ctx.pilot}, this is ${ctx.jtac}, 5-Line`
+    ],
     lines: [
-      { n: 1, key: 'observer', label: 'Observer / Game Plan', short: 'Obs', ph: 'z. B. LONGBOW 1, Type 2, BOT, Guns', help: 'Eigene Callsign, Kontrolltyp (1/2/3), MOA, Bewaffnung.' },
-      { n: 2, key: 'friendly', label: 'Friendly Location / Mark', short: 'Friend', ph: 'z. B. 300 m nördlich, IR-Strobe', rb: true, help: 'Eigene Position & Markierung – relativ zum Ziel, keine Grids! – Pflicht-Readback.' },
-      { n: 3, key: 'target', label: 'Target Location', short: 'Target', ph: 'z. B. 35S VA 12345 67890', rb: true, help: 'Zielort: Grid (6-stellig BOT / 8+ BOC) oder Peilung+Distanz – Pflicht-Readback.' },
-      { n: 4, key: 'desc', label: 'Target Description / Mark', short: 'DESC', ph: 'z. B. BTR-60, markiert mit Lase 1688', help: 'Zielbeschreibung & Markierung (Laser mit Code, Rauch, IR).' },
-      { n: 5, key: 'remarks', label: 'Remarks & Restrictions', short: 'Rmks', ph: 'z. B. FAH 010, LTL 320, Danger Close 270 m', rb: true, help: 'LTL/PTL, Danger Close (+Initialen), Bedrohungen, TOT – Pflicht-Readback.' }
+      { n: 1, key: 'gameplan', short: 'GP', label: 'Game Plan', rb: false,
+        fields: [
+          { key: 'control', type: 'select', label: 'Type', ph: 'Kontrolltyp', options: [
+            { v: 'Type 1', t: 'Type 1' }, { v: 'Type 2', t: 'Type 2' }, { v: 'Type 3', t: 'Type 3' } ] },
+          { key: 'moa', type: 'select', label: 'MOA', options: [
+            { v: 'BOT', t: 'BOT – Bomb on Target' }, { v: 'BOC', t: 'BOC – Bomb on Coordinate' } ] },
+          { key: 'count', type: 'text', label: '#', ph: 'Anzahl', width: '90px', list: 'count-list' },
+          { key: 'ordnance', type: 'text', label: 'Ordnance', ph: 'z. B. 114 Kilo', list: 'ordnance-list' }
+        ],
+        sent: (v) => {
+          const p = [];
+          if (v.control) p.push(v.control + ' control');
+          if (v.moa) p.push(v.moa);
+          if (v.count) p.push(v.count + ' times');
+          if (v.ordnance) p.push(v.ordnance);
+          return p.length ? p.join(', ') : null;
+        } },
+      { n: 2, key: 'friendly', short: 'Friend', label: 'Friendly Location / Mark', rb: true,
+        fields: [
+          { key: 'loc', type: 'text', label: 'Lage', ph: 'z. B. 200 m westlich des Ziels' },
+          { key: 'mark', type: 'select', label: 'Mark', options: [
+            { v: 'smoke', t: 'Smoke' }, { v: 'IR strobe', t: 'IR Strobe' }, { v: 'laser', t: 'Laser' },
+            { v: 'IR pointer', t: 'IR Pointer' }, { v: 'panel', t: 'Panel' }, { v: 'no mark', t: 'No Mark' } ] }
+        ],
+        sent: (v) => {
+          if (!v.loc && !v.mark) return null;
+          const parts = ['Friendly position is'];
+          if (v.loc) parts.push(v.loc);
+          if (v.mark) parts.push('marked by', v.mark);
+          return parts.join(' ');
+        } },
+      { n: 3, key: 'target', short: 'Target', label: 'Target Location', rb: true,
+        fields: [
+          { key: 'grid', type: 'text', label: 'Grid', ph: 'z. B. 0453 0976 (6-stellig)', mono: true },
+          { key: 'ref', type: 'text', label: 'Alternativ', ph: 'z. B. Bearing/Distanz oder Referenz' }
+        ],
+        sent: (v) => {
+          if (v.grid) return `Target is on grid ${v.grid}`;
+          if (v.ref) return `Target is ${v.ref}`;
+          return null;
+        } },
+      { n: 4, key: 'desc', short: 'DESC', label: 'Target Description / Mark', rb: false,
+        fields: [
+          { key: 'desc', type: 'text', label: 'Beschreibung', ph: 'z. B. BTR-42A', list: 'target-list' },
+          { key: 'mark', type: 'select', label: 'Mark', options: [
+            { v: 'laser', t: 'Laser' }, { v: 'smoke', t: 'Smoke' }, { v: 'IR pointer', t: 'IR Pointer' },
+            { v: 'IR strobe', t: 'IR Strobe' }, { v: 'no mark', t: 'No Mark' } ] }
+        ],
+        sent: (v) => {
+          if (!v.desc && !v.mark) return null;
+          const parts = ['Target is'];
+          if (v.desc) parts.push(v.desc);
+          if (v.mark) parts.push('marked by', v.mark);
+          return parts.join(' ');
+        } },
+      { n: 5, key: 'remarks', short: 'Rmks', label: 'Remarks & Restrictions', rb: true,
+        fields: [
+          { key: 'ltl', type: 'text', label: 'LTL/PTL', ph: 'z. B. 342', width: '110px' },
+          { key: 'fah', type: 'text', label: 'FAH', ph: 'z. B. 010', width: '110px' },
+          { key: 'dc', type: 'text', label: 'Danger Close', ph: 'z. B. 270 m' },
+          { key: 'extra', type: 'text', label: 'Weitere', ph: 'z. B. TOT 1600 Zulu' }
+        ],
+        sent: (v) => {
+          const p = [];
+          if (v.ltl) p.push(`Laser to target line ${v.ltl}`);
+          if (v.fah) p.push(`final attack heading ${v.fah}`);
+          if (v.dc) p.push(`danger close ${v.dc}`);
+          if (v.extra) p.push(v.extra);
+          return p.length ? p.join(', ') : null;
+        } }
     ]
   },
 
-  // ---------- 9-Line MEDEVAC / CASEVAC – ATG-Format ----------
+  // ---------- 9-Line CAS (Fixed-Wing) ----------
+  cas9: {
+    name: '9-Line CAS',
+    use: 'Fixed-Wing (Kampfjets, Bomber)',
+    briefName: '9-Line',
+    intro: (ctx) => [
+      `${ctx.pilot}, this is ${ctx.jtac}, ready to copy 9-Line, over`,
+      `${ctx.pilot}, this is ${ctx.jtac}, 9-Line`
+    ],
+    lines: [
+      { n: 1, key: 'cp', short: 'CP', label: 'Control Point', rb: false,
+        fields: [{ key: 'cp', type: 'text', label: 'IP/BP/Keyhole', ph: 'z. B. IP Alpha', mono: true }],
+        sent: (v) => v.cp ? `Control point is ${v.cp}` : null },
+      { n: 2, key: 'dir', short: 'Dir', label: 'Target Direction & Offset', rb: false,
+        fields: [{ key: 'dir', type: 'text', label: 'Richtung', ph: 'z. B. 280° / rechts 500 m', mono: true }],
+        sent: (v) => v.dir ? `Target direction ${v.dir}` : null },
+      { n: 3, key: 'dist', short: 'Dist', label: 'Target Distance', rb: false,
+        fields: [{ key: 'dist', type: 'text', label: 'Distanz', ph: 'z. B. 8 km', mono: true }],
+        sent: (v) => v.dist ? `Target is ${v.dist} from the control point` : null },
+      { n: 4, key: 'elev', short: 'ELV', label: 'Target Altitude (MSL)', rb: true,
+        fields: [{ key: 'elev', type: 'text', label: 'Höhe', ph: 'z. B. 120 m MSL', mono: true }],
+        sent: (v) => v.elev ? `Target elevation ${v.elev}` : null },
+      { n: 5, key: 'desc', short: 'DESC', label: 'Target Description', rb: false,
+        fields: [{ key: 'desc', type: 'text', label: 'Beschreibung', ph: 'z. B. T-90, Kompanie', list: 'target-list' }],
+        sent: (v) => v.desc ? `Target is ${v.desc}` : null },
+      { n: 6, key: 'grid', short: 'GRID', label: 'Target Coordinates', rb: true,
+        fields: [{ key: 'grid', type: 'text', label: 'Grid', ph: 'z. B. 35S LE 20476 18769', mono: true }],
+        sent: (v) => v.grid ? `Target is on grid ${v.grid}` : null },
+      { n: 7, key: 'mark', short: 'Mark', label: 'Marker Type', rb: false,
+        fields: [{ key: 'mark', type: 'text', label: 'Mark', ph: 'z. B. Lase 1688', list: 'mark-list', mono: true }],
+        sent: (v) => v.mark ? `Marked by ${v.mark}` : null },
+      { n: 8, key: 'friend', short: 'Friend', label: 'Friendly Position', rb: true,
+        fields: [{ key: 'friend', type: 'text', label: 'Eigene Kräfte', ph: 'z. B. 200 m südlich, kein Kontakt', mono: true }],
+        sent: (v) => v.friend ? `Friendlies are ${v.friend}` : null },
+      { n: 9, key: 'egress', short: 'Egress', label: 'Egress & Routing', rb: false,
+        fields: [{ key: 'egress', type: 'text', label: 'Egress', ph: 'z. B. Egress Nord, dann HA Alpha', mono: true }],
+        sent: (v) => v.egress ? `Egress ${v.egress}` : null }
+    ]
+  },
+
+  // ---------- 9-Line MEDEVAC / CASEVAC ----------
   medevac: {
     name: '9-Line MEDEVAC/CASEVAC',
     use: 'Medizinische Evakuierung',
-    header: '9-Line MEDEVAC, über.',
+    briefName: '9-Line MEDEVAC',
+    intro: (ctx) => [
+      `${ctx.pilot}, this is ${ctx.jtac}, MEDEVAC 9-Line, over`
+    ],
     lines: [
-      { n: 1, key: 'loc', label: 'Location of Pickup Site', short: 'Loc', ph: 'z. B. 35S VA 12345 67890', rb: true, help: 'Grid der Aufnahmestelle – Pflicht-Readback.' },
-      { n: 2, key: 'freq', label: 'Requesting Callsign & Frequency', short: 'Freq', ph: 'z. B. SPIRIT 7-1, 36.50', rb: true, help: 'Anfordernde Callsign & Funkfrequenz – Pflicht-Readback.' },
-      { n: 3, key: 'precedence', label: 'Patients by Precedence', short: 'Prec', rb: true, group: [
-        { code: 'A', label: 'Urgent (≤2h)' }, { code: 'B', label: 'Urgent Surgical (≤2h)' },
-        { code: 'C', label: 'Priority (≤4h)' }, { code: 'D', label: 'Routine (≤24h)' }, { code: 'E', label: 'Convenience' }
-      ], help: 'Anzahl Patienten nach Priorität – Pflicht-Readback.' },
-      { n: 4, key: 'equip', label: 'Special Equipment', short: 'Equip', rb: true, select: [
-        { v: 'A', t: 'A – None' }, { v: 'B', t: 'B – Hoist' }, { v: 'C', t: 'C – Extraction Equipment' }, { v: 'D', t: 'D – Ventilation' }
-      ], help: 'Spezialausrüstung (MEDEVAC) – Pflicht-Readback.' },
-      { n: 5, key: 'type', label: 'Patients by Type', short: 'Type', group: [
-        { code: 'L', label: 'Litter (liegend)' }, { code: 'A', label: 'Ambulatory (gehend)' }
-      ], help: 'Anzahl Patienten nach Art.' },
-      { n: 6, key: 'security', label: 'Security at Pickup Site', short: 'Sec', rb: true, select: [
-        { v: 'N', t: 'N – No enemy troops in area' }, { v: 'P', t: 'P – Possible enemy troops (caution)' },
-        { v: 'E', t: 'E – Enemy troops in area (caution)' }, { v: 'X', t: 'X – Enemy troops (armed escort required)' }
-      ], help: 'Sicherheitslage an der Aufnahmestelle – Pflicht-Readback.' },
-      { n: 7, key: 'mark', label: 'Method of Marking', short: 'Mark', rb: true, select: [
-        { v: 'A', t: 'A – Panel' }, { v: 'B', t: 'B – Pyrotechnic Signal' },
-        { v: 'C', t: 'C – Smoke Signal (Farbe bei Final Approach bestätigen)' }, { v: 'D', t: 'D – None' }, { v: 'E', t: 'E – Other' }
-      ], help: 'Markierungsmethode (CASEVAC) – Pflicht-Readback.' },
-      { n: 8, key: 'nat', label: 'Patient Nationality & Status', short: 'Nat', select: [
-        { v: 'A', t: 'A – US Military' }, { v: 'B', t: 'B – US Civilian' }, { v: 'C', t: 'C – Non-US Military' },
-        { v: 'D', t: 'D – Non-US Civilian' }, { v: 'E', t: 'E – Enemy Prisoner of War' }
-      ], help: 'Nationalität & Status der Patienten.' },
-      { n: 9, key: 'cbrn', label: 'Patient CBRN Status', short: 'CBRN', select: [
-        { v: 'N', t: 'N – Nuclear' }, { v: 'B', t: 'B – Biological' }, { v: 'C', t: 'C – Chemical' }, { v: '0', t: 'Keine' }
-      ], help: 'Kontamination der Patienten (CBRN).' }
+      { n: 1, key: 'loc', short: 'Loc', label: 'Location of Pickup Site', rb: true,
+        fields: [{ key: 'loc', type: 'text', label: 'Grid', ph: 'z. B. 0453 0976', mono: true }],
+        sent: (v) => v.loc ? `Pickup site is at grid ${v.loc}` : null },
+      { n: 2, key: 'freq', short: 'Freq', label: 'Callsign & Frequency', rb: true,
+        fields: [{ key: 'freq', type: 'text', label: 'Funk', ph: 'z. B. Ch. 2 TAD / SPIRIT 7-X', mono: true }],
+        sent: (v) => v.freq ? `Requesting on ${v.freq}` : null },
+      { n: 3, key: 'precedence', short: 'Prec', label: 'Patients by Precedence', rb: true,
+        fields: [
+          { key: 'A', type: 'num', label: 'A Urgent' }, { key: 'B', type: 'num', label: 'B Urg-Surg' },
+          { key: 'C', type: 'num', label: 'C Priority' }, { key: 'D', type: 'num', label: 'D Routine' }, { key: 'E', type: 'num', label: 'E Conv' }
+        ],
+        sent: (v) => {
+          const p = [];
+          if (v.A) p.push(`${v.A} urgent`);
+          if (v.B) p.push(`${v.B} urgent surgical`);
+          if (v.C) p.push(`${v.C} priority`);
+          if (v.D) p.push(`${v.D} routine`);
+          if (v.E) p.push(`${v.E} convenience`);
+          return p.length ? `Patients: ${p.join(', ')}` : null;
+        } },
+      { n: 4, key: 'equip', short: 'Equip', label: 'Special Equipment', rb: true,
+        fields: [{ key: 'equip', type: 'select', label: 'Ausrüstung', options: [
+          { v: 'A – none', t: 'A – None' }, { v: 'B – hoist', t: 'B – Hoist' },
+          { v: 'C – extraction', t: 'C – Extraction Equipment' }, { v: 'D – ventilation', t: 'D – Ventilation' } ] }],
+        sent: (v) => v.equip ? `Special equipment ${v.equip}` : null },
+      { n: 5, key: 'type', short: 'Type', label: 'Patients by Type',
+        fields: [{ key: 'L', type: 'num', label: 'L Litter' }, { key: 'A', type: 'num', label: 'A Ambulatory' }],
+        sent: (v) => {
+          const p = [];
+          if (v.L) p.push(`${v.L} litter`);
+          if (v.A) p.push(`${v.A} ambulatory`);
+          return p.length ? `Patients: ${p.join(', ')}` : null;
+        } },
+      { n: 6, key: 'security', short: 'Sec', label: 'Security at Pickup Site', rb: true,
+        fields: [{ key: 'security', type: 'select', label: 'Sicherheit', options: [
+          { v: 'N – no enemy', t: 'N – No enemy troops in area' }, { v: 'P – possible enemy', t: 'P – Possible enemy (caution)' },
+          { v: 'E – enemy in area', t: 'E – Enemy troops in area (caution)' }, { v: 'X – escort required', t: 'X – Enemy troops (armed escort required)' } ] }],
+        sent: (v) => v.security ? `Security at pickup site: ${v.security}` : null },
+      { n: 7, key: 'mark', short: 'Mark', label: 'Method of Marking', rb: true,
+        fields: [{ key: 'mark', type: 'select', label: 'Markierung', options: [
+          { v: 'A – panel', t: 'A – Panel' }, { v: 'B – pyro', t: 'B – Pyrotechnic Signal' },
+          { v: 'C – smoke', t: 'C – Smoke Signal' }, { v: 'D – none', t: 'D – None' }, { v: 'E – other', t: 'E – Other' } ] }],
+        sent: (v) => v.mark ? `Marked by method ${v.mark}` : null },
+      { n: 8, key: 'nat', short: 'Nat', label: 'Patient Nationality & Status',
+        fields: [{ key: 'nat', type: 'select', label: 'Nationalität', options: [
+          { v: 'A – US military', t: 'A – US Military' }, { v: 'B – US civilian', t: 'B – US Civilian' },
+          { v: 'C – non-US military', t: 'C – Non-US Military' }, { v: 'D – non-US civilian', t: 'D – Non-US Civilian' },
+          { v: 'E – POW', t: 'E – Enemy Prisoner of War' } ] }],
+        sent: (v) => v.nat ? `Patient nationality ${v.nat}` : null },
+      { n: 9, key: 'cbrn', short: 'CBRN', label: 'Patient CBRN Status',
+        fields: [{ key: 'cbrn', type: 'select', label: 'CBRN', options: [
+          { v: 'N', t: 'N – Nuclear' }, { v: 'B', t: 'B – Biological' }, { v: 'C', t: 'C – Chemical' }, { v: 'keine', t: 'Keine' } ] }],
+        sent: (v) => v.cbrn && v.cbrn !== 'keine' ? `CBRN status ${v.cbrn}` : null }
     ]
   },
 
-  // ---------- SOF Gunship Call for Fire (AC-130) ----------
-  gunship: {
-    name: 'SOF Gunship Call for Fire',
-    use: 'AC-130 / Gunship-Unterstützung',
-    header: 'Gunship Fire Mission, über.',
-    lines: [
-      { n: 1, key: 'warno', label: 'Warning Order', short: 'Warno', ph: 'z. B. GHOSTRIDER 1-1, LONGBOW 1, Fire Mission', help: 'Gunship-Callsign, Controller-Callsign, „Fire Mission".' },
-      { n: 2, key: 'friendly', label: 'Friendly Location & Marker', short: 'Friend', ph: 'z. B. 200 m nordwestlich, IR-Strobe', help: 'Eigene Position & Markierung.' },
-      { n: 3, key: 'target', label: 'Target Location', short: 'Target', ph: 'z. B. 35S VA 12345 67890', help: 'Grid oder Peilung/Distanz.' },
-      { n: 4, key: 'desc', label: 'Target Description & Marker', short: 'DESC', ph: 'z. B. 2 technicals, Lase 1688', help: 'Zielbeschreibung & Markierung.' },
-      { n: 5, key: 'remarks', label: 'Remarks & Restrictions', short: 'Rmks', ph: 'z. B. GTL 045, Min Safe Alt 5000 ft, Winds 270/15', rb: true, help: 'Türme, Mindestsicherheitshöhe, Bodenwind, GTL – Pflicht-Readback.' }
-    ]
-  },
-
-  // ---------- CCA 5-Line (Joint Fires Observer) ----------
-  cca: {
-    name: 'CCA 5-Line',
-    use: 'Joint Fires Observer / CCA',
-    header: 'CCA 5-Line, über.',
-    lines: [
-      { n: 1, key: 'observer', label: 'Observer / Game Plan', short: 'Obs', ph: 'z. B. FOX 2-1, Type 2, BOC', help: 'Callsign, Kontrolltyp, MOA.' },
-      { n: 2, key: 'friendly', label: 'Observer Friendly Location', short: 'Friend', ph: 'z. B. 250 m nördlich des Ziels', rb: true, help: 'Eigene Position (vom Controller) – Pflicht-Readback.' },
-      { n: 3, key: 'target', label: 'Target Location', short: 'Target', ph: 'z. B. 35S VA 12345 67890', rb: true, help: 'Zielort – Pflicht-Readback.' },
-      { n: 4, key: 'desc', label: 'Target Description', short: 'DESC', ph: 'z. B. T-72 im Hangar', help: 'Zielbeschreibung (vom Controller).' },
-      { n: 5, key: 'mark', label: 'Target Marker Type', short: 'Mark', ph: 'z. B. grün Rauch / Lase 1212', help: 'Markierungstyp des Ziels.' }
-    ]
-  },
-
-  // ---------- Remotely Piloted Aircraft CAS ----------
-  rpas: {
-    name: 'RPAS CAS Brief',
-    use: 'UAV (z. B. AVENGER 9 / MQ-9)',
-    header: 'RPAS CAS Brief, über.',
-    lines: [
-      { n: 1, key: 'gameplan', label: 'Game Plan', short: 'GP', ph: 'z. B. Type 3, BOC, GBU-12', help: 'Kontrolltyp, MOA, Bewaffnung.' },
-      { n: 2, key: 'target', label: 'Target Location', short: 'Target', ph: 'z. B. 35S VA 12345 67890', rb: true, help: '8–10-stellige Grids bevorzugt – Pflicht-Readback.' },
-      { n: 3, key: 'elev', label: 'Target Elevation (MSL)', short: 'ELV', ph: 'z. B. 95 m MSL', rb: true, help: 'Zielhöhe – Pflicht-Readback.' },
-      { n: 4, key: 'friendly', label: 'Closest Friendlies & Marker', short: 'Friend', ph: 'z. B. 400 m südlich, kein Mark', help: 'Nächste eigene Kräfte & Markierung.' },
-      { n: 5, key: 'remarks', label: 'Remarks & Restrictions', short: 'Rmks', ph: 'z. B. Danger Close 280 m, FAH 090', rb: true, help: 'Restriktionen – Pflicht-Readback.' }
-    ]
-  },
-
-  // ---------- Helicopter Landing Zone (HLZ) ----------
+  // ---------- HLZ Brief – FOKUS ----------
   hlz: {
     name: 'HLZ Brief',
     use: 'Helikopter-Landeplatz',
-    header: 'HLZ Brief, über.',
+    briefName: 'HLZ Brief',
+    intro: (ctx) => [
+      `${ctx.pilot}, this is ${ctx.jtac}, ready for HLZ brief, over`,
+      `${ctx.pilot}, this is ${ctx.jtac}, HLZ brief`
+    ],
     lines: [
-      { n: 1, key: 'loc', label: 'HLZ Location', short: 'Loc', ph: 'z. B. 35S VA 12345 67890', help: 'Position der Landezone.' },
-      { n: 2, key: 'mark', label: 'HLZ Marker Type', short: 'Mark', select: [
-        { v: 'Panel', t: 'Panel' }, { v: 'Pyro', t: 'Pyrotechnic Signal' },
-        { v: 'Smoke', t: 'Smoke Signal (Farbe bei Final Approach bestätigen)' }, { v: 'IR', t: 'IR' },
-        { v: 'ATAK', t: 'ATAK Marker' }, { v: 'Other', t: 'Other' }, { v: 'None', t: 'None' }
-      ], help: 'Markierung der Landezone.' },
-      { n: 3, key: 'obstacles', label: 'Obstacles / Hazards', short: 'Obs', ph: 'z. B. Hochspannung 100 m westlich', help: 'Hindernisse & Gefahren.' },
-      { n: 4, key: 'friendly', label: 'Friendly SITREP', short: 'Friend', ph: 'z. B. 12 PAX, 2 EPW, 100 m nordöstlich', help: 'PAX/EPW/HVI-Anzahl, Richtung & Distanz zur HLZ.' },
-      { n: 5, key: 'enemy', label: 'Enemy SITREP / HLZ Security', short: 'Enemy', select: [
-        { v: 'Green', t: 'Green – HLZ secure' }, { v: 'Yellow', t: 'Yellow – possible enemy IVO HLZ' },
-        { v: 'Red', t: 'Red – enemy IVO HLZ' }
-      ], help: 'Sicherheitsstatus der HLZ (Richtung & Distanz nächster Feinde angeben).' },
-      { n: 6, key: 'remarks', label: 'Remarks & Restrictions', short: 'Rmks', ph: 'z. B. Final Approach Heading 010, Ziel nach Pickup', rb: true, help: 'Final Approach Heading, Ziel nach Pickup, weitere Infos – Pflicht-Readback.' }
+      { n: 1, key: 'loc', short: 'Loc', label: 'HLZ Location', rb: true,
+        fields: [{ key: 'loc', type: 'text', label: 'Grid', ph: 'z. B. 0453 0976', mono: true }],
+        sent: (v) => v.loc ? `Landing zone is at grid ${v.loc}` : null },
+      { n: 2, key: 'mark', short: 'Mark', label: 'HLZ Marker Type',
+        fields: [{ key: 'mark', type: 'select', label: 'Markierung', options: [
+          { v: 'panel', t: 'Panel' }, { v: 'pyrotechnic signal', t: 'Pyrotechnic Signal' },
+          { v: 'smoke', t: 'Smoke Signal' }, { v: 'IR', t: 'IR' }, { v: 'ATAK marker', t: 'ATAK Marker' },
+          { v: 'other', t: 'Other' }, { v: 'none', t: 'None' } ] }],
+        sent: (v) => v.mark ? `Marked by ${v.mark}` : null },
+      { n: 3, key: 'obstacles', short: 'Obs', label: 'Obstacles / Hazards',
+        fields: [{ key: 'obstacles', type: 'text', label: 'Hindernisse', ph: 'z. B. Hochspannung 100 m westlich' }],
+        sent: (v) => v.obstacles ? `Obstacles: ${v.obstacles}` : null },
+      { n: 4, key: 'friendly', short: 'Friend', label: 'Friendly SITREP',
+        fields: [{ key: 'friendly', type: 'text', label: 'Eigene Lage', ph: 'z. B. 12 PAX, 2 EPW, 100 m nordöstlich' }],
+        sent: (v) => v.friendly ? `Friendly sitrep: ${v.friendly}` : null },
+      { n: 5, key: 'enemy', short: 'Enemy', label: 'HLZ Security',
+        fields: [{ key: 'enemy', type: 'select', label: 'Sicherheit', options: [
+          { v: 'green', t: 'Green – HLZ secure' }, { v: 'yellow', t: 'Yellow – possible enemy IVO HLZ' },
+          { v: 'red', t: 'Red – enemy IVO HLZ' } ] }],
+        sent: (v) => v.enemy ? `Security is ${v.enemy}` : null },
+      { n: 6, key: 'remarks', short: 'Rmks', label: 'Remarks & Restrictions', rb: true,
+        fields: [{ key: 'remarks', type: 'text', label: 'Hinweise', ph: 'z. B. Final approach heading 010, Ziel nach Pickup' }],
+        sent: (v) => v.remarks ? `${v.remarks}` : null }
     ]
   },
 
-  // ---------- Austere Landing Zone (ALZ) ----------
+  // ---------- SOF Gunship Call for Fire ----------
+  gunship: {
+    name: 'SOF Gunship Call for Fire',
+    use: 'AC-130 / Gunship-Unterstützung',
+    briefName: 'Gunship Fire Mission',
+    intro: (ctx) => [
+      `${ctx.pilot}, this is ${ctx.jtac}, fire mission, over`
+    ],
+    lines: [
+      { n: 1, key: 'warno', short: 'Warno', label: 'Warning Order',
+        fields: [{ key: 'warno', type: 'text', label: 'Warno', ph: 'z. B. GHOSTRIDER 1-1, LONGBOW 1, Fire Mission' }],
+        sent: (v) => v.warno ? v.warno : null },
+      { n: 2, key: 'friendly', short: 'Friend', label: 'Friendly Location & Marker',
+        fields: [{ key: 'friendly', type: 'text', label: 'Eigene Lage', ph: 'z. B. 200 m nordwestlich, IR-Strobe' }],
+        sent: (v) => v.friendly ? `Friendly position is ${v.friendly}` : null },
+      { n: 3, key: 'target', short: 'Target', label: 'Target Location', rb: true,
+        fields: [{ key: 'target', type: 'text', label: 'Grid', ph: 'z. B. 0453 0976', mono: true }],
+        sent: (v) => v.target ? `Target is on grid ${v.target}` : null },
+      { n: 4, key: 'desc', short: 'DESC', label: 'Target Description & Marker',
+        fields: [{ key: 'desc', type: 'text', label: 'Ziel', ph: 'z. B. 2 technicals, Lase 1688' }],
+        sent: (v) => v.desc ? `Target is ${v.desc}` : null },
+      { n: 5, key: 'remarks', short: 'Rmks', label: 'Remarks & Restrictions', rb: true,
+        fields: [{ key: 'remarks', type: 'text', label: 'Hinweise', ph: 'z. B. GTL 045, Min Safe Alt 5000 ft' }],
+        sent: (v) => v.remarks ? v.remarks : null }
+    ]
+  },
+
+  // ---------- RPAS (UAV) ----------
+  rpas: {
+    name: 'RPAS CAS Brief',
+    use: 'UAV (z. B. AVENGER 9 / MQ-9)',
+    briefName: 'RPAS CAS Brief',
+    intro: (ctx) => [
+      `${ctx.pilot}, this is ${ctx.jtac}, RPAS CAS brief, over`
+    ],
+    lines: [
+      { n: 1, key: 'gameplan', short: 'GP', label: 'Game Plan',
+        fields: [{ key: 'gameplan', type: 'text', label: 'Game Plan', ph: 'z. B. Type 3, BOC, GBU-12' }],
+        sent: (v) => v.gameplan ? v.gameplan : null },
+      { n: 2, key: 'target', short: 'Target', label: 'Target Location', rb: true,
+        fields: [{ key: 'target', type: 'text', label: 'Grid', ph: 'z. B. 8–10-stellig', mono: true }],
+        sent: (v) => v.target ? `Target is on grid ${v.target}` : null },
+      { n: 3, key: 'elev', short: 'ELV', label: 'Target Elevation (MSL)', rb: true,
+        fields: [{ key: 'elev', type: 'text', label: 'Höhe', ph: 'z. B. 95 m MSL', mono: true }],
+        sent: (v) => v.elev ? `Target elevation ${v.elev}` : null },
+      { n: 4, key: 'friendly', short: 'Friend', label: 'Closest Friendlies',
+        fields: [{ key: 'friendly', type: 'text', label: 'Eigene Kräfte', ph: 'z. B. 400 m südlich, kein Mark' }],
+        sent: (v) => v.friendly ? `Friendlies are ${v.friendly}` : null },
+      { n: 5, key: 'remarks', short: 'Rmks', label: 'Remarks & Restrictions', rb: true,
+        fields: [{ key: 'remarks', type: 'text', label: 'Hinweise', ph: 'z. B. Danger close 280 m, FAH 090' }],
+        sent: (v) => v.remarks ? v.remarks : null }
+    ]
+  },
+
+  // ---------- ALZ ----------
   alz: {
     name: 'ALZ Brief',
     use: 'Improvisierte Landezone',
-    header: 'ALZ Brief, über.',
+    briefName: 'ALZ Brief',
+    intro: (ctx) => [
+      `${ctx.pilot}, this is ${ctx.jtac}, ALZ brief, over`
+    ],
     lines: [
-      { n: 1, key: 'loc', label: 'ALZ Location', short: 'Loc', ph: 'z. B. 35S VA 12345 67890', rb: true, help: 'Position – Pflicht-Readback.' },
-      { n: 2, key: 'ground', label: 'Ground Type', short: 'Ground', select: [
-        { v: 'Dirt soft', t: 'Dirt (Soft)' }, { v: 'Dirt compact', t: 'Dirt (Compact)' },
-        { v: 'Gravel soft', t: 'Gravel (Soft)' }, { v: 'Gravel compact', t: 'Gravel (Compact)' },
-        { v: 'Cement', t: 'Cement (Road/Slabs)' }, { v: 'Unkempt', t: 'Unkempt (Foliage/Mixed)' }
-      ], help: 'Bodenbeschaffenheit.' },
-      { n: 3, key: 'elev', label: 'ALZ Elevation (MSL)', short: 'ELV', ph: 'z. B. 140 m MSL', rb: true, help: 'Höhe – Pflicht-Readback.' },
-      { n: 4, key: 'bearing', label: 'ALZ Bearing', short: 'Brg', ph: 'z. B. 120°', rb: true, help: 'Peilung der Landebahn – Pflicht-Readback.' },
-      { n: 5, key: 'length', label: 'ALZ Length (m)', short: 'Len', ph: 'z. B. 800 m', rb: true, help: 'Länge in Metern – Pflicht-Readback.' },
-      { n: 6, key: 'mark', label: 'ALZ Marker Type', short: 'Mark', select: [
-        { v: 'Panel', t: 'Panel' }, { v: 'Pyro', t: 'Pyrotechnic Signal' },
-        { v: 'Smoke', t: 'Smoke Signal' }, { v: 'IR', t: 'IR' }, { v: 'Other', t: 'Other' }, { v: 'None', t: 'None' }
-      ], help: 'Markierung.' },
-      { n: 7, key: 'weather', label: 'Weather Conditions', short: 'Wx', ph: 'z. B. 3 km Sicht, Wind 270/12', help: 'Wetter an der ALZ.' },
-      { n: 8, key: 'enemy', label: 'Enemy SITREP / ALZ Security', short: 'Enemy', select: [
-        { v: 'Green', t: 'Green – ALZ secure' }, { v: 'Yellow', t: 'Yellow – possible enemy IVO ALZ' },
-        { v: 'Red', t: 'Red – enemy IVO ALZ' }
-      ], help: 'Sicherheitsstatus (Richtung/Distanz nächster Feinde angeben).' },
-      { n: 9, key: 'ondeck', label: 'Time Spent On Deck', short: 'OnDeck', ph: 'z. B. 5 min', help: 'Zeit am Boden.' }
+      { n: 1, key: 'loc', short: 'Loc', label: 'ALZ Location', rb: true,
+        fields: [{ key: 'loc', type: 'text', label: 'Grid', ph: 'z. B. 0453 0976', mono: true }],
+        sent: (v) => v.loc ? `ALZ is at grid ${v.loc}` : null },
+      { n: 2, key: 'ground', short: 'Ground', label: 'Ground Type',
+        fields: [{ key: 'ground', type: 'select', label: 'Boden', options: [
+          { v: 'dirt soft', t: 'Dirt (Soft)' }, { v: 'dirt compact', t: 'Dirt (Compact)' },
+          { v: 'gravel soft', t: 'Gravel (Soft)' }, { v: 'gravel compact', t: 'Gravel (Compact)' },
+          { v: 'cement', t: 'Cement (Road/Slabs)' }, { v: 'unkempt', t: 'Unkempt (Foliage/Mixed)' } ] }],
+        sent: (v) => v.ground ? `Ground type is ${v.ground}` : null },
+      { n: 3, key: 'elev', short: 'ELV', label: 'ALZ Elevation (MSL)', rb: true,
+        fields: [{ key: 'elev', type: 'text', label: 'Höhe', ph: 'z. B. 140 m MSL', mono: true }],
+        sent: (v) => v.elev ? `ALZ elevation ${v.elev}` : null },
+      { n: 4, key: 'bearing', short: 'Brg', label: 'ALZ Bearing', rb: true,
+        fields: [{ key: 'bearing', type: 'text', label: 'Peilung', ph: 'z. B. 120°', mono: true }],
+        sent: (v) => v.bearing ? `ALZ bearing ${v.bearing}` : null },
+      { n: 5, key: 'length', short: 'Len', label: 'ALZ Length (m)', rb: true,
+        fields: [{ key: 'length', type: 'text', label: 'Länge', ph: 'z. B. 800 m', mono: true }],
+        sent: (v) => v.length ? `ALZ length ${v.length} meters` : null },
+      { n: 6, key: 'mark', short: 'Mark', label: 'ALZ Marker',
+        fields: [{ key: 'mark', type: 'select', label: 'Markierung', options: [
+          { v: 'panel', t: 'Panel' }, { v: 'pyrotechnic', t: 'Pyrotechnic' }, { v: 'smoke', t: 'Smoke' },
+          { v: 'IR', t: 'IR' }, { v: 'other', t: 'Other' }, { v: 'none', t: 'None' } ] }],
+        sent: (v) => v.mark ? `Marked by ${v.mark}` : null },
+      { n: 7, key: 'weather', short: 'Wx', label: 'Weather',
+        fields: [{ key: 'weather', type: 'text', label: 'Wetter', ph: 'z. B. 3 km Sicht, Wind 270/12' }],
+        sent: (v) => v.weather ? `Weather: ${v.weather}` : null },
+      { n: 8, key: 'enemy', short: 'Enemy', label: 'ALZ Security',
+        fields: [{ key: 'enemy', type: 'select', label: 'Sicherheit', options: [
+          { v: 'green', t: 'Green – ALZ secure' }, { v: 'yellow', t: 'Yellow – possible enemy IVO ALZ' },
+          { v: 'red', t: 'Red – enemy IVO ALZ' } ] }],
+        sent: (v) => v.enemy ? `Security is ${v.enemy}` : null },
+      { n: 9, key: 'ondeck', short: 'OnDeck', label: 'Time on Deck',
+        fields: [{ key: 'ondeck', type: 'text', label: 'Zeit am Boden', ph: 'z. B. 5 min' }],
+        sent: (v) => v.ondeck ? `Time on deck ${v.ondeck}` : null }
     ]
   },
 
-  // ---------- Airdrop Brief ----------
+  // ---------- Airdrop ----------
   airdrop: {
     name: 'Airdrop Brief',
     use: 'Fallschirmabwurf',
-    header: 'Airdrop Brief, über.',
+    briefName: 'Airdrop Brief',
+    intro: (ctx) => [
+      `${ctx.pilot}, this is ${ctx.jtac}, airdrop brief, over`
+    ],
     lines: [
-      { n: 1, key: 'poi', label: 'Point of Impact', short: 'POI', ph: 'z. B. 35S VA 12345 67890', rb: true, help: 'Aufschlagpunkt – Pflicht-Readback.' },
-      { n: 2, key: 'elev', label: 'POI Elevation (MSL)', short: 'ELV', ph: 'z. B. 60 m MSL', rb: true, help: 'Höhe – Pflicht-Readback.' },
-      { n: 3, key: 'heading', label: 'Final Approach Heading to DZ', short: 'FAH', ph: 'z. B. 090', rb: true, help: 'Endanflugkurs zur DZ – Pflicht-Readback.' },
-      { n: 4, key: 'desc', label: 'POI Description & Marker', short: 'DESC', select: [
-        { v: 'Panel', t: 'Panel' }, { v: 'Pyro', t: 'Pyrotechnic Signal' },
-        { v: 'Smoke', t: 'Smoke Signal' }, { v: 'IR', t: 'IR' }, { v: 'Other', t: 'Other' }, { v: 'None', t: 'None' }
-      ], help: 'Beschreibung & Markierung.' },
-      { n: 5, key: 'friendly', label: 'Friendly Location & Marker', short: 'Friend', ph: 'z. B. 500 m östlich, kein Mark', help: 'Eigene Kräfte.' },
-      { n: 6, key: 'winds', label: 'Surface Winds', short: 'Winds', ph: 'z. B. 240/12 kts', help: 'Bodenwind.' },
-      { n: 7, key: 'remarks', label: 'Remarks & Restrictions', short: 'Rmks', ph: 'z. B. Danger Close 400 m', help: 'Weitere Hinweise.' }
+      { n: 1, key: 'poi', short: 'POI', label: 'Point of Impact', rb: true,
+        fields: [{ key: 'poi', type: 'text', label: 'Grid', ph: 'z. B. 0453 0976', mono: true }],
+        sent: (v) => v.poi ? `Point of impact is at grid ${v.poi}` : null },
+      { n: 2, key: 'elev', short: 'ELV', label: 'POI Elevation (MSL)', rb: true,
+        fields: [{ key: 'elev', type: 'text', label: 'Höhe', ph: 'z. B. 60 m MSL', mono: true }],
+        sent: (v) => v.elev ? `POI elevation ${v.elev}` : null },
+      { n: 3, key: 'heading', short: 'FAH', label: 'Final Approach Heading', rb: true,
+        fields: [{ key: 'heading', type: 'text', label: 'Kurs', ph: 'z. B. 090', mono: true }],
+        sent: (v) => v.heading ? `Final approach heading ${v.heading}` : null },
+      { n: 4, key: 'desc', short: 'DESC', label: 'POI Description & Marker',
+        fields: [{ key: 'desc', type: 'text', label: 'Beschreibung/Mark', ph: 'z. B. Panel, offene Fläche' }],
+        sent: (v) => v.desc ? `POI is ${v.desc}` : null },
+      { n: 5, key: 'friendly', short: 'Friend', label: 'Friendly Location',
+        fields: [{ key: 'friendly', type: 'text', label: 'Eigene Kräfte', ph: 'z. B. 500 m östlich, kein Mark' }],
+        sent: (v) => v.friendly ? `Friendlies are ${v.friendly}` : null },
+      { n: 6, key: 'winds', short: 'Winds', label: 'Surface Winds',
+        fields: [{ key: 'winds', type: 'text', label: 'Wind', ph: 'z. B. 240/12 kts' }],
+        sent: (v) => v.winds ? `Surface winds ${v.winds}` : null },
+      { n: 7, key: 'remarks', short: 'Rmks', label: 'Remarks',
+        fields: [{ key: 'remarks', type: 'text', label: 'Hinweise', ph: 'z. B. Danger close 400 m' }],
+        sent: (v) => v.remarks ? v.remarks : null }
     ]
   },
 
@@ -255,22 +422,63 @@ const REF = {
   cff: {
     name: 'Call for Fire',
     use: 'Artillerie / Mörser',
-    header: 'Call for Fire, über.',
+    briefName: 'Call for Fire',
+    intro: (ctx) => [
+      `${ctx.jtac}, call for fire, over`
+    ],
     lines: [
-      { n: 1, key: 'observer', label: 'Observer Identification', short: 'Obs', ph: 'z. B. LONGBOW 1', help: 'Eigene Kennung.' },
-      { n: 2, key: 'warno', label: 'WARNO', short: 'Warno', select: [
-        { v: 'Adjust Fire', t: 'Adjust Fire' }, { v: 'Fire For Effect', t: 'Fire For Effect' },
-        { v: 'Suppression', t: 'Suppression' }, { v: 'Immediate Suppression', t: 'Immediate Suppression' }
-      ], help: 'Missionstyp. Zielort-Methode: Grid, Polar oder Shift.' },
-      { n: 3, key: 'target', label: 'Target Location', short: 'Target', ph: 'z. B. 35S VA 12345 67890', help: 'Grid / Polar / Shift von bekanntem Punkt.' },
-      { n: 4, key: 'desc', label: 'Target Description', short: 'DESC', ph: 'z. B. 3 technicals, gedeckt', help: 'Zielbeschreibung.' },
-      { n: 5, key: 'moe', label: 'Method of Engagement', short: 'MOE', ph: 'z. B. Precision Fire, High, HE VT, 6 Runden', help: 'Präzision/Area, Trajektorie (Low/High – Mörser nur High), Munition, Zünder, Verteilung.' },
-      { n: 6, key: 'mfc', label: 'Method of Fire Control', short: 'MFC', ph: 'z. B. "At my command" / "Fire when ready"', help: 'Feuerkontrolle.' }
+      { n: 1, key: 'observer', short: 'Obs', label: 'Observer ID',
+        fields: [{ key: 'observer', type: 'text', label: 'Kennung', ph: 'z. B. LONGBOW 1' }],
+        sent: (v) => v.observer ? `Observer ${v.observer}` : null },
+      { n: 2, key: 'warno', short: 'Warno', label: 'WARNO',
+        fields: [{ key: 'warno', type: 'select', label: 'Mission', options: [
+          { v: 'adjust fire', t: 'Adjust Fire' }, { v: 'fire for effect', t: 'Fire For Effect' },
+          { v: 'suppression', t: 'Suppression' }, { v: 'immediate suppression', t: 'Immediate Suppression' } ] }],
+        sent: (v) => v.warno ? `${v.warno}, over` : null },
+      { n: 3, key: 'target', short: 'Target', label: 'Target Location',
+        fields: [{ key: 'target', type: 'text', label: 'Grid', ph: 'z. B. 0453 0976', mono: true }],
+        sent: (v) => v.target ? `Target is on grid ${v.target}` : null },
+      { n: 4, key: 'desc', short: 'DESC', label: 'Target Description',
+        fields: [{ key: 'desc', type: 'text', label: 'Ziel', ph: 'z. B. 3 technicals, gedeckt' }],
+        sent: (v) => v.desc ? `Target is ${v.desc}` : null },
+      { n: 5, key: 'moe', short: 'MOE', label: 'Method of Engagement',
+        fields: [{ key: 'moe', type: 'text', label: 'Engagement', ph: 'z. B. Precision Fire, High, HE VT, 6 Runden' }],
+        sent: (v) => v.moe ? `Method of engagement ${v.moe}` : null },
+      { n: 6, key: 'mfc', short: 'MFC', label: 'Method of Fire Control',
+        fields: [{ key: 'mfc', type: 'text', label: 'Feuerkontrolle', ph: 'z. B. At my command' }],
+        sent: (v) => v.mfc ? `${v.mfc}` : null }
+    ]
+  },
+
+  // ---------- CCA 5-Line ----------
+  cca: {
+    name: 'CCA 5-Line',
+    use: 'Joint Fires Observer / CCA',
+    briefName: 'CCA 5-Line',
+    intro: (ctx) => [
+      `${ctx.pilot}, this is ${ctx.jtac}, CCA 5-Line, over`
+    ],
+    lines: [
+      { n: 1, key: 'observer', short: 'Obs', label: 'Observer / Game Plan',
+        fields: [{ key: 'observer', type: 'text', label: 'Observer', ph: 'z. B. FOX 2-1, Type 2, BOC' }],
+        sent: (v) => v.observer ? v.observer : null },
+      { n: 2, key: 'friendly', short: 'Friend', label: 'Friendly Location', rb: true,
+        fields: [{ key: 'friendly', type: 'text', label: 'Eigene Lage', ph: 'z. B. 250 m nördlich des Ziels' }],
+        sent: (v) => v.friendly ? `Friendly position is ${v.friendly}` : null },
+      { n: 3, key: 'target', short: 'Target', label: 'Target Location', rb: true,
+        fields: [{ key: 'target', type: 'text', label: 'Grid', ph: 'z. B. 0453 0976', mono: true }],
+        sent: (v) => v.target ? `Target is on grid ${v.target}` : null },
+      { n: 4, key: 'desc', short: 'DESC', label: 'Target Description',
+        fields: [{ key: 'desc', type: 'text', label: 'Ziel', ph: 'z. B. T-72 im Hangar' }],
+        sent: (v) => v.desc ? `Target is ${v.desc}` : null },
+      { n: 5, key: 'mark', short: 'Mark', label: 'Target Marker',
+        fields: [{ key: 'mark', type: 'text', label: 'Mark', ph: 'z. B. grün Rauch / Lase 1212' }],
+        sent: (v) => v.mark ? `Marked by ${v.mark}` : null }
     ]
   },
 
   // ============================================================
-  // CAS CHECK-IN & SITREP (TEFACHR) & GAME PLAN & BDA (SALT-R)
+  // CAS CHECK-IN / TEFACHR / GAME PLAN / REMARKS / BDA (Workflow)
   // ============================================================
   checkinFields: [
     { key: 'callsign', label: 'Callsign', ph: 'z. B. HAVOC 1-1' },
@@ -284,13 +492,13 @@ const REF = {
   ],
 
   tefachrFields: [
-    { key: 'threat',   label: 'Threat', ph: 'z. B. AAA bei Grid 123 456, MANPADS möglich', help: 'Flugabwehr-Bedrohungen & Lagen.' },
-    { key: 'enemy',    label: 'Enemy Situation', ph: 'z. B. Zug Stärke, 3 BTR, Richtung Nord', help: 'Feindlage allgemein – keine Grids, die kommen in den CAS Brief.' },
-    { key: 'friendly', label: 'Friendly Update', ph: 'z. B. 1. Zug hält Linie, Vorstoß nach Osten', help: 'Eigene Lage & Absicht des GFC.' },
-    { key: 'artillery',label: 'Artillery', ph: 'z. B. 2x M119, GTL 045° aktiv', help: 'Indirektes Feuer & Gun-Target-Line.' },
-    { key: 'clearance',label: 'Clearance Authority', ph: 'z. B. Cdr. Miller (JM), initialen "JM"', help: 'Wer gibt Brief/Stack/Mark/Control frei? Initialen des Kommandeurs.' },
-    { key: 'hazards',  label: 'Hazards', ph: 'z. B. Türme, Min Safe Alt 3000 ft, CBRN möglich', help: 'Türme, Mindestsicherheitshöhe, Wetter, CBRN, Sprengstoffe.' },
-    { key: 'remarks',  label: 'Remarks & Restrictions', ph: 'z. B. CAS-Absicht, Restriktionen, ACM/FSCM-Änderungen', help: 'Weitere Hinweise.' }
+    { key: 'threat',   label: 'Threat', ph: 'z. B. AAA bei Grid 123 456, MANPADS möglich' },
+    { key: 'enemy',    label: 'Enemy Situation', ph: 'z. B. Zug Stärke, 3 BTR, Richtung Nord' },
+    { key: 'friendly', label: 'Friendly Update', ph: 'z. B. 1. Zug hält Linie, Vorstoß nach Osten' },
+    { key: 'artillery',label: 'Artillery', ph: 'z. B. 2x M119, GTL 045° aktiv' },
+    { key: 'clearance',label: 'Clearance Authority', ph: 'z. B. Cdr. Miller (JM), Initialen "JM"' },
+    { key: 'hazards',  label: 'Hazards', ph: 'z. B. Türme, Min Safe Alt 3000 ft, CBRN möglich' },
+    { key: 'remarks',  label: 'Remarks & Restrictions', ph: 'z. B. CAS-Absicht, Restriktionen, ACM/FSCM-Änderungen' }
   ],
 
   gameplanFields: [
@@ -304,12 +512,12 @@ const REF = {
       { v: 'BOC', t: 'BOC – Bomb On Coordinate (8–10-stelliges Grid, GPS-Waffen)' }
     ]},
     { key: 'ordnance', label: 'Ordnance / Desired Effect', ph: 'z. B. GBU-12, Zerstörung' },
-    { key: 'interval', label: 'Interval', ph: 'z. B. 5 s / Salve', help: 'Nur falls relevant.' }
+    { key: 'interval', label: 'Interval', ph: 'z. B. 5 s / Salve' }
   ],
 
   remarksFields: [
     { key: 'fah',     label: 'Final Attack Heading', ph: 'z. B. 010 (immer 3-stellig)' },
-    { key: 'ltlptl',  label: 'LTL / PTL', ph: 'z. B. LTL 320°', help: 'Laser-/Pointer-to-Target-Line in Grad oder Kardinal.' },
+    { key: 'ltlptl',  label: 'LTL / PTL', ph: 'z. B. LTL 320°' },
     { key: 'threats', label: 'Threats & SEAD', ph: 'z. B. ZSU-23 bei 123 456, SEAD aktiv' },
     { key: 'aca',     label: 'Airspace Coordination Areas', ph: 'z. B. ACA Nord frei' },
     { key: 'dangerclose', label: 'Danger Close + Initialen', ph: 'z. B. DC 270 m, Initialen JM' },
@@ -321,13 +529,13 @@ const REF = {
   bdaFields: [
     { key: 'size',     label: 'Size', ph: 'z. B. 3 Fahrzeuge zerstört' },
     { key: 'activity', label: 'Activity', ph: 'z. B. kein weiteres Feuer' },
-    { key: 'location', label: 'Location', ph: 'z. B. 35S VA 12345 67890' },
+    { key: 'location', label: 'Location', ph: 'z. B. 0453 0976' },
     { key: 'time',     label: 'Time', ph: 'z. B. 16:02 Zulu' },
     { key: 'remarks',  label: 'Remarks', ph: 'z. B. Re-Attack mit Guns empfohlen' }
   ],
 
   // ============================================================
-  // DANGER CLOSE (Ghost + ATG + Infotext)
+  // DANGER CLOSE
   // ============================================================
   dangerClose: {
     note: 'Wenn die verwendete Waffe nicht gelistet ist, gilt DANGER CLOSE: 400 m. Ist das Ziel innerhalb des Radius zu eigenen Truppen: „Cleared Danger Close" + Initialen des Kommandeurs.',
@@ -373,7 +581,7 @@ const REF = {
   ],
 
   // ============================================================
-  // CGF 160th SOAR AIRFRAMES (aus der Google-Sheet)
+  // CGF 160th SOAR AIRFRAMES
   // ============================================================
   airframes: {
     transport: [
@@ -395,10 +603,38 @@ const REF = {
   },
 
   // ============================================================
-  // BREVITY – Wörterbuch (Ghost, 24th STS, ATG, TFW)
+  // ZIELE (Dropdown), BEWAFFNUNG (Dropdown), PHRASEN
+  // ============================================================
+  targets: [
+    'BTR-42A', 'BTR-80', 'BTR-60', 'T-90', 'T-72', 'T-34', 'BMP-2', 'BMP-1', 'MT-LB',
+    'Technikal (Pickup w/ MG)', 'ZU-23', 'ZSU-23-4 Shilka', 'MANPADS-Team', 'ATGM-Team',
+    'Infanterie (Trupp)', 'Mörser-Stellung', 'Bunker', 'Gebäude', 'LKW-Konvoi', 'Statische Waffe'
+  ],
+  ordnance: [
+    '114 Kilo (AGM-114K Hellfire)', '114N Kilo (AGM-114N)', 'M134 Minigun', 'M230 Chaingun (30mm)',
+    'M229 Hydra 70 (19x)', 'M151 Hydra (14x)', 'APKWS (laser Hydra)', 'GAU-23A 30mm (AC-130)',
+    'GAU-XX 105mm (AC-130)', '7.62 Miniguns (AC-130)', '20mm', '25mm', '40mm Bofors',
+    'GBU-12 (500lb laser)', 'GBU-54 (GPS/Laser 500lb)', 'GBU-38 (GPS 500lb)', 'GBU-31 (GPS 2000lb)'
+  ],
+  smokeMarks: ['Smoke', 'IR Strobe', 'IR Pointer', 'Laser', 'Panel', 'Pyro', 'No Mark'],
+  standardPhrases: [
+    '{pilot}, this is {jtac}, ready to copy, over',
+    'Good readback, over',
+    'Stand by, over',
+    'Break, break',
+    'Cleared hot',
+    'Cleared to engage',
+    'Continue, over',
+    'Contact, over',
+    'Shack, good effects, over',
+    'Winchester, RTB'
+  ],
+
+  // ============================================================
+  // BREVITY – Wörterbuch
   // ============================================================
   brevity: [
-    // Comms / Bestätigung
+    // Comms
     { cat: 'Comms', code: 'OVER', text: 'Ende der Übertragung, Antwort erwartet.' },
     { cat: 'Comms', code: 'OUT', text: 'Ende der Übertragung, keine Antwort erwartet.' },
     { cat: 'Comms', code: 'ROGER', text: 'Empfangen und verstanden.' },
@@ -412,7 +648,9 @@ const REF = {
     { cat: 'Comms', code: 'AFFIRMATIVE / NEGATIVE', text: 'Ja / Nein (vermeidet Verwechslungen).' },
     { cat: 'Comms', code: 'NO GO', text: 'Werde nicht befolgen / nicht möglich.' },
     { cat: 'Comms', code: 'OSCAR MIKE', text: 'On the Move – in Bewegung.' },
-    // Kontrolltypen & Clearing
+    { cat: 'Comms', code: 'REPEAT', text: 'Letzte Übertragung wiederholen.' },
+    { cat: 'Comms', code: 'FIRE MISSION', text: 'Einleitung eines Artillerie-/Feuerauftrags.' },
+    // Kontrolle
     { cat: 'Kontrolle', code: 'TYPE 1', text: 'JTAC sieht Ziel UND angreifendes Flugzeug → „Cleared Hot" (1 Angriff, keine GPS-Munition).' },
     { cat: 'Kontrolle', code: 'TYPE 2', text: 'JTAC sieht Ziel ODER Flugzeug → „Cleared Hot" (1 Angriff).' },
     { cat: 'Kontrolle', code: 'TYPE 3', text: 'JTAC sieht keins von beidem → „Cleared to Engage" (mehrere Angriffe erlaubt).' },
@@ -421,16 +659,18 @@ const REF = {
     { cat: 'Kontrolle', code: 'CONTINUE', text: 'Manöver fortsetzen – KEINE Waffenfreigabe.' },
     { cat: 'Kontrolle', code: 'PUSH [ZIEL]', text: 'Flugzeug verlässt BP/HA Richtung Ziel, z. B. „Push IP, call when established".' },
     { cat: 'Kontrolle', code: 'ABORT', text: 'Aktion/Angriff/Mission sofort abbrechen.' },
+    { cat: 'Kontrolle', code: 'CEASE FIRE', text: 'Sofortiges Feuer einstellen.' },
     { cat: 'Kontrolle', code: 'DANGER CLOSE', text: 'Ziel innerhalb von 400 m (bzw. Waffenradius) zu eigenen Kräften → + Initialen des Kommandeurs.' },
     { cat: 'Kontrolle', code: 'BROKEN ARROW', text: 'Ziel liegt auf eigenen Kräften, CAS als letzte Option.' },
     { cat: 'Kontrolle', code: 'FALLEN ANGEL', text: 'Flugzeug abgestürzt / Notlandung.' },
     { cat: 'Kontrolle', code: 'SHOPPING', text: 'Inoffiziell: Luftfahrzeug fragt nach Type-3-Zielen.' },
-    // MOA / Waffen
+    // Waffen
     { cat: 'Waffen', code: 'BOT', text: 'Bomb On Target – Pilot sieht & identifiziert das Ziel (6-stellige Grids genügen).' },
     { cat: 'Waffen', code: 'BOC', text: 'Bomb On Coordinate – Angriff auf Koordinate (8–10-stellig, GPS-Waffen).' },
     { cat: 'Waffen', code: 'PICKLE', text: 'Bombenabwurf (dumb/GPS-Bomben, GBU-53, GBU-38).' },
     { cat: 'Waffen', code: 'RIFLE', text: 'AGM / Hydra 70 abgefeuert.' },
     { cat: 'Waffen', code: 'GUNS', text: 'Bordkanonen im Einsatz (Miniguns, 30 mm usw.).' },
+    { cat: 'Waffen', code: 'SHOT', text: 'Waffe abgefeuert (Feuerleitstelle).' },
     { cat: 'Waffen', code: 'RIPPLE', text: 'Mehrere Waffen nacheinander abgefeuert.' },
     { cat: 'Waffen', code: 'DRY', text: 'Keine Waffe abgefeuert („dry pass").' },
     { cat: 'Waffen', code: 'PAVEWAY', text: 'Lasergelenkte Bombe (meist GBU-12, 500 lb).' },
@@ -443,7 +683,7 @@ const REF = {
     { cat: 'Waffen', code: 'HEDP', text: 'High Explosive Dual Purpose – großes Feuer, gut gegen Infanterie.' },
     { cat: 'Waffen', code: 'HEAT', text: 'High Explosive Anti Tank – Panzerdurchschlag.' },
     { cat: 'Waffen', code: 'WP', text: 'Willy Pete (Weißphosphor) – Infanterie & Rauch.' },
-    // Positionen
+    // Position
     { cat: 'Position', code: 'IP', text: 'Initial Point – Startpunkt des Angriffslaufs (Fixed-Wing).' },
     { cat: 'Position', code: 'BP', text: 'Battle Position – Feuerstellung für Rotary (Hover).' },
     { cat: 'Position', code: 'HA', text: 'Holding Area – Wartebereich für Rotary.' },
@@ -481,7 +721,7 @@ const REF = {
     { cat: 'Laser', code: '10 SECONDS', text: 'Vorwarnung: „Laser ON" in ~10 Sekunden.' },
     { cat: 'Laser', code: 'LTL', text: 'Laser-to-Target-Line – Richtung des Lasers (magnetisch/Kardinal).' },
     { cat: 'Laser', code: 'SELF LASE', text: 'Aufforderung an den Piloten, selbst zu lasen.' },
-    // IR Pointer
+    // IR
     { cat: 'IR', code: 'SPARKLE', text: 'Zielmarkierung mit IR-Pointer. Antwort: CONTACT SPARKLE oder NO JOY.' },
     { cat: 'IR', code: 'CONTACT SPARKLE', text: 'Pilot sieht das Sparkle.' },
     { cat: 'IR', code: 'SNAKE', text: 'IR-Strahl in Acht-Form oszillieren (Pilot soll es besser sehen).' },
@@ -497,9 +737,7 @@ const REF = {
     { cat: 'Gefahren', code: 'DEAD', text: 'Destruction of Enemy Air Defenses.' }
   ],
 
-  // ============================================================
-  // NATO-PHONETIK & ZAHLEN
-  // ============================================================
+  // ---------- NATO-Phonetik ----------
   phonetic: [
     ['A', 'Alpha'], ['B', 'Bravo'], ['C', 'Charlie'], ['D', 'Delta'], ['E', 'Echo'], ['F', 'Foxtrot'],
     ['G', 'Golf'], ['H', 'Hotel'], ['I', 'India'], ['J', 'Juliett'], ['K', 'Kilo'], ['L', 'Lima'],
@@ -512,9 +750,7 @@ const REF = {
     ['6', 'Six'], ['7', 'Seven'], ['8', 'Eight'], ['9', 'Niner'], ['.', 'Point'], [',', 'Decimal']
   ],
 
-  // ============================================================
-  // FUNKGERÄTE (TFW 18E Course)
-  // ============================================================
+  // ---------- Funkgeräte ----------
   radios: [
     { name: 'AN/PRC-117F', power: '20 W', range: '30–512 MHz', dist: '20+ km', note: 'Amerikanisch – Backpack-Radio' },
     { name: 'AN/PRC-152', power: '5 W', range: '30–512 MHz', dist: '5+ km', note: 'Amerikanisch – Standard-Handfunk' },
@@ -527,7 +763,6 @@ const REF = {
     { name: 'WS No. 38', power: '200 mW', range: '7.4–9 MHz', dist: '800 m', note: 'UK' }
   ],
 
-  // ---------- Funketikette (TFW) ----------
   radioEtiquette: [
     'Denken, bevor du sprichst – Nachricht vor PTT planen.',
     'Mit Callsign beginnen: „Empfänger, Sender, über".',
@@ -541,7 +776,6 @@ const REF = {
     'Abschluss immer mit „Out" oder passender Verabschiedung.'
   ],
 
-  // ---------- PACE-Plan (TFW) ----------
   pace: [
     ['Primary', 'Hauptkommunikationsweg'],
     ['Alternate', 'Ersatz, fast so zuverlässig wie Primary'],
@@ -549,7 +783,6 @@ const REF = {
     ['Emergency', 'Letzte Option, evtl. visuelle/akustische Signale']
   ],
 
-  // ---------- Laser-/IR-Markierungs-Prozeduren (TFW) ----------
   procedures: {
     irPointer: [
       '1) JTAC: 5-Line Brief übermitteln.',
@@ -572,13 +805,25 @@ const REF = {
     ]
   },
 
-  // ---------- Laser-Codes & Rauch ----------
+  // ---------- Pre-Mission-Checkliste ----------
+  checklist: [
+    { key: 'comms', label: 'Funk-Check (All-Stations-Check) auf allen Netzen' },
+    { key: 'laser', label: 'Laser-Code bestätigt (Standard: 1111)' },
+    { key: 'channels', label: 'Channels/Frequenzen gesetzt (z. B. Ch. 2 TAD)' },
+    { key: 'grids', label: 'Ziel-Grids eingetragen (6- oder 8-stellig)' },
+    { key: 'ipbp', label: 'IP / BP / HA festgelegt' },
+    { key: 'abort', label: 'Abort-Code besprochen (Default: abort in the clear)' },
+    { key: 'aca', label: 'Luftraumkoordination (ACA) geklärt' },
+    { key: 'dc', label: 'Danger-Close-Parameter bekannt' },
+    { key: 'callsigns', label: 'Callsigns & Funk für alle Assets verteilt' }
+  ],
+
   laserCodes: ['1111','1212','1313','1414','1515','1616','1688','1717','1818','1919','2121','3131','4141','5151'],
   smokeColors: ['Rot','Grün','Gelb','Violett','Weiß (nicht für Zielmarkierung)','Orange','Blau'],
   riskLevels: ['LOW','MEDIUM','HIGH']
 };
 
-// Flache Airframe-Liste (für Dropdowns/Auto-Vervollständigung)
+// Flache Airframe-Liste
 REF.airframesFlat = [];
 Object.keys(REF.airframes).forEach(cat => {
   REF.airframes[cat].forEach(a => {
@@ -587,7 +832,6 @@ Object.keys(REF.airframes).forEach(cat => {
 });
 REF.airframeCallsigns = REF.airframesFlat.map(a => a.cs);
 
-/** Airframe zu einem Callsign finden (Case-insensitiv, prefix-tolerant). */
 REF.findAirframe = function (cs) {
   if (!cs) return null;
   const q = String(cs).trim().toUpperCase();
@@ -596,6 +840,20 @@ REF.findAirframe = function (cs) {
     return aq === q || aq.replace(' (WIP)', '') === q || q.startsWith(aq.split(' ')[0]);
   }) || null;
 };
+
+// Format-Helfer: Liste aller Brief-Formate
+REF.briefFormats = [
+  { id: 'cas5',    label: '5-Line (Rotary)' },
+  { id: 'hlz',     label: 'HLZ' },
+  { id: 'cas9',    label: '9-Line CAS' },
+  { id: 'medevac', label: 'MEDEVAC' },
+  { id: 'gunship', label: 'Gunship' },
+  { id: 'rpas',    label: 'RPAS (UAV)' },
+  { id: 'alz',     label: 'ALZ' },
+  { id: 'airdrop', label: 'Airdrop' },
+  { id: 'cff',     label: 'Call for Fire' },
+  { id: 'cca',     label: 'CCA 5-Line' }
+];
 
 if (typeof window !== 'undefined') { window.REF = REF; }
 if (typeof module !== 'undefined' && module.exports) { module.exports = REF; }

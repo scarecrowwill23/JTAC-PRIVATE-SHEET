@@ -11,7 +11,7 @@ function createWindow() {
     minWidth: 1024,
     minHeight: 640,
     backgroundColor: '#101410',
-    title: 'JTAC Private Sheet',
+    title: 'JTAC Helper',
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -49,5 +49,5 @@ ipcMain.handle('app-version', () => app.getVersion());
 
 // --- IPC: Fenster-Titel kurz setzen (Status-Info) ---
 ipcMain.on('set-title', (_evt, title) => {
-  if (win && !win.isDestroyed()) win.setTitle(String(title || 'JTAC Private Sheet'));
+  if (win && !win.isDestroyed()) win.setTitle(String(title || 'JTAC Helper'));
 });

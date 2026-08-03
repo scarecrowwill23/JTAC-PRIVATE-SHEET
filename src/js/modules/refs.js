@@ -14,7 +14,8 @@
     { id: 'altitude', label: 'Höhen & Keyhole' },
     { id: 'airframes', label: 'Airframes' },
     { id: 'radio', label: 'Funk' },
-    { id: 'procedures', label: 'Verfahren' }
+    { id: 'procedures', label: 'Verfahren' },
+    { id: 'docs', label: '📄 Dokumente' }
   ];
   let current = 'brevity';
 
@@ -44,7 +45,63 @@
       case 'airframes': renderAirframes(root, R); break;
       case 'radio': renderRadio(root, R); break;
       case 'procedures': renderProcedures(root, R); break;
+      case 'docs': renderDocs(root, R); break;
     }
+  }
+
+  // ---------- Dokumente (Original-PDFs) ----------
+  const DOCS = [
+    { file: 'JTAC Protocols - 24th STS.pdf', title: 'JTAC Protocols – 24th STS', desc: 'Comms & Brevity, CAS-Controller, IP/BP/HA-Planung, 9-Line-Ablauf' },
+    { file: 'ATG REFERENCE SHEET.pdf', title: 'ATG Reference Sheet', desc: 'CAS-Flow-Chart, Check-in, TEFACHR, alle Brief-Formate, Keyhole' },
+    { file: "Ghost's JTAC Cheatsheet.pdf", title: "Ghost's JTAC Cheatsheet", desc: '12 Steps of CAS, Danger-Close-Tabelle, Brevity-Wörterbuch' },
+    { file: 'TFW 18E Course.pdf', title: 'TFW 18E Course', desc: 'Funkgeräte, Etikette, PACE, 5-/9-Line im Detail, Keyhole, HLZ' }
+  ];
+
+  function renderDocs(root) {
+    const grid = document.createElement('div');
+    grid.className = 'docs-grid';
+    grid.style.gridColumn = '1 / -1';
+
+    DOCS.forEach(d => {
+      const card = document.createElement('div');
+      card.className = 'doc-card';
+      const title = document.createElement('h3');
+      title.textContent = d.title;
+      card.appendChild(title);
+      const desc = document.createElement('p');
+      desc.textContent = d.desc;
+      card.appendChild(desc);
+      const openBtn = document.createElement('button');
+      openBtn.className = 'btn btn-primary';
+      openBtn.textContent = '📄 Öffnen';
+      openBtn.addEventListener('click', () => {
+        const viewer = document.getElementById('doc-viewer');
+        const iframe = document.getElementById('doc-frame');
+        if (viewer && iframe) {
+          iframe.src = 'docs/' + encodeURI(d.file);
+          viewer.style.display = 'block';
+          viewer.scrollIntoView();
+        }
+      });
+      card.appendChild(openBtn);
+      grid.appendChild(card);
+    });
+    root.appendChild(grid);
+
+    const viewer = document.createElement('div');
+    viewer.id = 'doc-viewer';
+    viewer.className = 'doc-viewer';
+    viewer.style.display = 'none';
+    const frame = document.createElement('iframe');
+    frame.id = 'doc-frame';
+    frame.className = 'doc-frame';
+    viewer.appendChild(frame);
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'btn btn-ghost';
+    closeBtn.textContent = '✕ Viewer schließen';
+    closeBtn.addEventListener('click', () => { viewer.style.display = 'none'; frame.src = 'about:blank'; });
+    viewer.appendChild(closeBtn);
+    root.appendChild(viewer);
   }
 
   // ---------- Brevity ----------

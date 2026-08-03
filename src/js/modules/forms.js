@@ -1,7 +1,8 @@
 // ============================================================
-// JTAC Private Sheet – Generischer Brief-Formular-Builder
-// Unterstützt Textfelder, Selects, Zahlengruppen (z. B. Patienten)
-// und Pflicht-Readback-Kennzeichnung (rb).
+// JTAC Helper – Generischer Brief-Formular-Builder
+// - Zeilen mit mehreren Sub-Feldern (fields: text/select/num)
+// - Pflicht-Readback-Kennzeichnung (rb)
+// - Satz-Output: baut vorlesbare Funksprüche aus den Formaten
 // ============================================================
 
 (function () {
@@ -11,7 +12,57 @@
                cca: 'jtac.cca', rpas: 'jtac.rpas', hlz: 'jtac.hlz', alz: 'jtac.alz',
                airdrop: 'jtac.airdrop', cff: 'jtac.cff' };
 
-  /** Eine Formularzeile aus einem Feld-Def bauen. */
+  /** Ein Sub-Feld bauen (text / select / num). */
+  function buildField(f, value) {
+    const wrap = document.createElement('div');
+    wrap.className = 'subfield';
+    if (f.width) wrap.style.flex = `0 0 ${f.width}`;
+
+    const label = document.createElement('label');
+    label.className = 'field-label sub';
+    label.textContent = f.label || '';
+    wrap.appendChild(label);
+
+    if (f.type === 'select') {
+      const sel = document.createElement('select');
+      sel.className = 'select';
+      sel.dataset.fk = f.key;
+      const ph = document.createElement('option');
+      ph.value = '';
+      ph.textContent = f.ph || '—';
+      sel.appendChild(ph);
+      (f.options || []).forEach(o => {
+        const opt = document.createElement('option');
+        opt.value = o.v;
+        opt.textContent = o.t;
+        sel.appendChild(opt);
+      });
+      sel.value = value || '';
+      wrap.appendChild(sel);
+    } else if (f.type === 'num') {
+      const num = document.createElement('input');
+      num.className = 'input num mono';
+      num.type = 'text';
+      num.inputMode = 'numeric';
+      num.placeholder = '0';
+      num.dataset.fk = f.key;
+      num.value = value || '';
+      wrap.appendChild(num);
+    } else {
+      const input = document.createElement('input');
+      input.className = 'input mono';
+      input.type = 'text';
+      input.placeholder = f.ph || '';
+      input.dataset.fk = f.key;
+      input.value = value || '';
+      if (f.list) input.setAttribute('list', f.list);
+      if (!f.mono) input.classList.remove('mono');
+      wrap.appendChild(input);
+    }
+    return wrap;
+  }
+
+  /** Eine Formularzeile aus einem Line-Def bauen. */
   function buildLineRow(def, value) {
     const div = document.createElement('div');
     div.className = 'field-row align' + (def.rb ? ' rb' : '');
@@ -28,61 +79,39 @@
     const label = document.createElement('label');
     label.className = 'field-label';
     let labelText = `${def.short || def.n} – ${def.label}`;
-    if (def.rb) labelText += '  ⚠ READBACK';
+    if (def.rb) labelText += '  ⚠';
     label.textContent = labelText;
-    if (def.help) label.title = def.help;
     grow.appendChild(label);
 
-    // Gruppen-Feld (Zahlenfelder)
-    if (def.group) {
-      const group = document.createElement('div');
-      group.className = 'numgroup';
-      def.group.forEach(g => {
-        const wrap = document.createElement('span');
-        wrap.className = 'numwrap';
-        const lab = document.createElement('span');
-        lab.className = 'numlab';
-        lab.textContent = g.code;
-        lab.title = g.label;
-        const num = document.createElement('input');
-        num.className = 'input num';
-        num.type = 'text';
-        num.inputMode = 'numeric';
-        num.placeholder = '0';
-        num.dataset.gk = g.code;
-        num.value = (value && value[g.code] !== undefined) ? value[g.code] : '';
-        wrap.appendChild(lab);
-        wrap.appendChild(num);
-        group.appendChild(wrap);
+    // Sub-Felder (mehrere pro Zeile)
+    if (def.fields) {
+      const rowInner = document.createElement('div');
+      rowInner.className = 'subfields';
+      def.fields.forEach(f => {
+        const v = value && typeof value === 'object' ? value[f.key] : '';
+        rowInner.appendChild(buildField(f, v));
       });
-      div.dataset.nums = '1';
-      grow.appendChild(group);
-    }
-    // Select-Feld
-    else if (def.select) {
+      grow.appendChild(rowInner);
+    } else if (def.select) {
       const sel = document.createElement('select');
       sel.className = 'select';
       const ph = document.createElement('option');
-      ph.value = '';
-      ph.textContent = '— auswählen —';
+      ph.value = ''; ph.textContent = '— auswählen —';
       sel.appendChild(ph);
       def.select.forEach(o => {
         const opt = document.createElement('option');
-        opt.value = o.v;
-        opt.textContent = o.t;
+        opt.value = o.v; opt.textContent = o.t;
         sel.appendChild(opt);
       });
       sel.value = value || '';
       grow.appendChild(sel);
-    }
-    // Textfeld
-    else {
+    } else {
       const input = document.createElement('input');
       input.className = 'input mono';
       input.type = 'text';
       input.placeholder = def.ph || '';
-      input.title = def.help || '';
       input.value = value || '';
+      input.dataset.fk = def.key;
       if (def.list) input.setAttribute('list', def.list);
       grow.appendChild(input);
     }
@@ -92,25 +121,29 @@
     return div;
   }
 
-  /**
-   * Formular aus einer Brief-Definition bauen.
-   * def = { name, lines: [{n,key,label,short,ph,help,rb,group,select}] }
-   */
+  /** Wert einer Zeile lesen (Objekt bei fields, sonst String). */
+  function readLineValue(row, def) {
+    if (def.fields) {
+      const v = {};
+      row.querySelectorAll('[data-fk]').forEach(el => { v[el.dataset.fk] = el.value.trim(); });
+      return v;
+    }
+    const input = row.querySelector('.input, .select');
+    return input ? input.value.trim() : '';
+  }
+
+  /** Formular bauen. def = { name, lines: [...] }. */
   function initBriefForm(containerId, def, opts = {}) {
     const container = document.getElementById(containerId);
     if (!container) return null;
     container.innerHTML = '';
 
-    const form = { rows: {}, els: {} };
+    const rows = {};
     def.lines.forEach(ld => {
-      const value = opts.load()[ld.key];
+      const value = (opts.load() || {})[ld.key];
       const row = buildLineRow(ld, value);
       container.appendChild(row);
-      form.rows[ld.key] = row;
-      if (!row.dataset.nums) {
-        const input = row.querySelector('.input, .select');
-        if (input) form.els[ld.key] = input;
-      }
+      rows[ld.key] = row;
     });
 
     container.addEventListener('input', onUpdate);
@@ -118,82 +151,88 @@
 
     function getValues() {
       const v = {};
-      def.lines.forEach(ld => {
-        const el = form.els[ld.key];
-        if (el) {
-          v[ld.key] = el.value.trim();
-        } else {
-          const nums = form.rows[ld.key].querySelectorAll('input[data-gk]');
-          if (nums.length) {
-            const o = {};
-            nums.forEach(n => { o[n.dataset.gk] = n.value.trim(); });
-            v[ld.key] = o;
-          }
-        }
-      });
+      def.lines.forEach(ld => { v[ld.key] = readLineValue(rows[ld.key], ld); });
       return v;
     }
 
     function setValues(values) {
       def.lines.forEach(ld => {
-        const el = form.els[ld.key];
-        const val = values[ld.key];
-        if (el) {
-          if (el.value !== (val || '')) el.value = val || '';
+        const val = (values || {})[ld.key];
+        const row = rows[ld.key];
+        if (!row) return;
+        if (ld.fields) {
+          row.querySelectorAll('[data-fk]').forEach(el => {
+            el.value = (val && val[el.dataset.fk]) || '';
+          });
         } else {
-          const nums = form.rows[ld.key].querySelectorAll('input[data-gk]');
-          nums.forEach(n => { n.value = (val && val[n.dataset.gk]) || ''; });
+          const input = row.querySelector('.input, .select');
+          if (input && input.value !== (val || '')) input.value = val || '';
         }
+      });
+      onUpdate();
+    }
+
+    function clear() {
+      def.lines.forEach(ld => {
+        const row = rows[ld.key];
+        if (!row) return;
+        row.querySelectorAll('[data-fk], .input, .select').forEach(el => { el.value = ''; });
       });
       onUpdate();
     }
 
     function onUpdate() {
       const v = getValues();
-      opts.onChange(v);
-      opts.save(v);
+      if (opts.onChange) opts.onChange(v);
+      if (opts.save) opts.save(v);
       // Badges „erledigt"
       def.lines.forEach(ld => {
-        const row = form.rows[ld.key];
-        if (!row) return;
-        const badge = row.querySelector('.line-badge');
+        const row = rows[ld.key];
+        const badge = row && row.querySelector('.line-badge');
         if (!badge) return;
-        let filled = false;
         const val = v[ld.key];
-        if (val !== undefined && val !== null) {
-          filled = typeof val === 'object' ? Object.values(val).some(Boolean) : String(val).trim() !== '';
-        }
+        let filled = false;
+        if (val && typeof val === 'object') filled = Object.values(val).some(x => String(x).trim() !== '');
+        else filled = val && String(val).trim() !== '';
         badge.classList.toggle('done', filled);
       });
     }
 
-    return { getValues, setValues, onUpdate };
+    return { getValues, setValues, clear, onUpdate };
   }
 
-  /** Funkspruch-Text aus Werten bauen. */
-  function buildPreview(def, values, opts = {}) {
-    const out = [];
+  /**
+   * Vorlesbaren Funkspruch bauen (Satz-Output).
+   * def: Format-Definition; values: {lineKey: wert, pilot?}; ctx: {profile}
+   */
+  function buildScript(def, values, ctx) {
+    const profile = (ctx && ctx.profile) || {};
+    const pilot = (values && values.pilot) || profile.cas || 'Pilot';
+    const jtac = profile.jtac || 'JTAC';
+    const lines = [];
+
     def.lines.forEach(ld => {
-      let v = values[ld.key];
+      const v = values ? values[ld.key] : undefined;
       if (v === undefined || v === null) return;
-      if (typeof v === 'object') {
-        const parts = Object.keys(v).filter(k => v[k]);
-        if (!parts.length) return;
-        v = parts.map(k => `${k}:${v[k]}`).join(' ');
-      }
-      v = String(v).trim();
-      if (!v) return;
-      out.push(`${ld.n}. ${ld.short || ld.n}: ${v}`);
+      const sentence = ld.sent ? ld.sent(v, { all: values, profile, pilot, jtac }) : null;
+      if (sentence && String(sentence).trim()) lines.push(String(sentence).trim());
     });
-    if (opts.header && out.length) out.unshift(opts.header);
-    return out.join('\n');
+
+    if (!lines.length) return '';
+
+    const intro = def.intro ? def.intro({ pilot, jtac, profile }) : [];
+    return [...intro, ...lines].join('\n');
   }
 
-  /** Kurzen Readback-Hinweis erzeugen. */
+  /** Pflicht-Readback-Zeilen als Liste (für Abhaken). */
+  function readbackLines(def) {
+    return def.lines.filter(l => l.rb).map(l => ({ n: l.n, key: l.key, label: l.label }));
+  }
+
   function readbackHint(def) {
-    const rb = def.lines.filter(l => l.rb).map(l => l.n).join(', ');
-    return rb ? '⚠ Pflicht-Readback: Zeile ' + rb : '';
+    const rb = readbackLines(def).map(r => r.n);
+    return rb.length ? '⚠ Pflicht-Readback: Zeile ' + rb.join(', ') : '';
   }
 
-  window.JTForms = { LS, initBriefForm, buildPreview, readbackHint };
+  window.JTForms = { LS, initBriefForm, buildScript, readbackLines, readbackHint };
 })();
