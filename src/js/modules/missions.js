@@ -26,11 +26,12 @@
   function getMissions() { return missions; }
   function getActive() { return missions.find(m => m.id === activeId) || null; }
 
-  function create(name, map) {
+  function create(name, map, campaign) {
     const m = {
       id: uid(),
       name: name || ('Mission ' + (missions.length + 1)),
       map: map || 'altis',
+      campaign: campaign || '',
       createdAt: Date.now(),
       scripts: [],
       bda: [],
@@ -43,6 +44,43 @@
     localStorage.setItem(ACTIVE, activeId);
     save();
     return m;
+  }
+
+  /** Alle Campaign-Namen (eindeutig, sortiert nach letzter Mission). */
+  function getCampaigns() {
+    const names = [...new Set(missions.map(m => m.campaign).filter(Boolean))];
+    return names.sort((a, b) => {
+      const la = Math.max(0, ...missions.filter(m => m.campaign === a).map(m => m.createdAt));
+      const lb = Math.max(0, ...missions.filter(m => m.campaign === b).map(m => m.createdAt));
+      return lb - la;
+    });
+  }
+
+  /** Missions einer Campaign. */
+  function getByCampaign(campaign) {
+    return missions.filter(m => m.campaign === campaign).sort((a, b) => a.createdAt - b.createdAt);
+  }
+
+  /** Text-Report einer Campaign (alle Funksprüche + BDA). */
+  function campaignReport(campaign) {
+    const list = getByCampaign(campaign);
+    if (!list.length) return null;
+    const out = [];
+    out.push('=== CAMPAIGN REPORT: ' + campaign + ' ===');
+    out.push('Missionen: ' + list.length + ' / 6 · Erstellt: ' + new Date(list[0].createdAt).toLocaleDateString('de-DE'));
+    list.forEach((m, i) => {
+      out.push('');
+      out.push('--- Mission ' + (i + 1) + ': ' + m.name + ' (' + window.JTProfiles.mapName(m.map) + ') ---');
+      out.push('Funksprüche:');
+      if (!m.scripts.length) out.push('  (keine)');
+      m.scripts.forEach(s => out.push('  [' + fmtTime(s.ts) + '] ' + s.type + ': ' + s.text.replace(/\n/g, ' | ')));
+      out.push('BDA:');
+      if (!m.bda.length) out.push('  (keine)');
+      m.bda.forEach(b => out.push('  [' + fmtTime(b.ts) + '] ' + (b.target || '—') + (b.grid ? ' @ ' + b.grid : '') + ': ' + (b.result || '—')));
+    });
+    out.push('');
+    out.push('=== ENDE REPORT ===');
+    return out.join('\n');
   }
 
   function setActive(id) {
@@ -200,10 +238,30 @@
       o.value = m.id; o.textContent = m.name;
       s2.appendChild(o);
     });
-    s2.value = (window.JTProfiles.getActive().map) || 'altis';
+    const setMap = window.JTSettings ? window.JTSettings.getSettings().defaultMap : null;
+    s2.value = (window.JTProfiles.getActive().map) || setMap || 'altis';
     f2.appendChild(l2); f2.appendChild(s2);
-    row1.appendChild(f1); row1.appendChild(f2);
+    const f3 = document.createElement('div');
+    f3.className = 'field';
+    const l3 = document.createElement('label');
+    l3.className = 'field-label';
+    l3.textContent = 'Campaign (optional)';
+    const i3 = document.createElement('input');
+    i3.className = 'input';
+    i3.id = 'mission-new-campaign';
+    i3.placeholder = 'z. B. Op. Iron Wrath (6 Missionen)';
+    i3.setAttribute('list', 'campaign-list');
+    f3.appendChild(l3); f3.appendChild(i3);
+    row1.appendChild(f1); row1.appendChild(f2); row1.appendChild(f3);
     form.appendChild(row1);
+
+    // Campaign-Datalist (bestehende Campaigns)
+    const dl = document.createElement('datalist');
+    dl.id = 'campaign-list';
+    getCampaigns().forEach(c => {
+      const o = document.createElement('option'); o.value = c; dl.appendChild(o);
+    });
+    form.appendChild(dl);
 
     const btnRow = document.createElement('div');
     btnRow.className = 'field-row';
@@ -213,7 +271,8 @@
     btn.addEventListener('click', () => {
       const name = document.getElementById('mission-new-name').value.trim();
       const map = document.getElementById('mission-new-map').value;
-      create(name, map);
+      const campaign = document.getElementById('mission-new-campaign').value.trim();
+      create(name, map, campaign);
       render();
       if (window.App && window.App.onMissionChange) window.App.onMissionChange();
     });
@@ -222,19 +281,18 @@
     panel.appendChild(form);
     root.appendChild(panel);
 
-    // Bestehende Missionen
+    // Bestehende Missionen – nach Campaign gruppiert
     if (missions.length) {
       const h3 = document.createElement('h2');
       h3.className = 'dash-h2';
       h3.textContent = 'Bestehende Missionen';
       root.appendChild(h3);
-      const list = document.createElement('div');
-      list.className = 'profile-grid';
-      missions.forEach(m => {
+
+      const renderMissionCard = (m) => {
         const card = document.createElement('div');
         card.className = 'profile-card';
         const hh = document.createElement('h3');
-        hh.textContent = m.name;
+        hh.textContent = m.name + (m.campaign ? '  [' + m.campaign + ']' : '');
         card.appendChild(hh);
         const kv = document.createElement('div');
         kv.className = 'kv';
@@ -267,9 +325,42 @@
         actions.appendChild(open);
         actions.appendChild(del);
         card.appendChild(actions);
-        list.appendChild(card);
+        return card;
+      };
+
+      // Gruppen ohne Campaign
+      const noCampaign = missions.filter(m => !m.campaign);
+      if (noCampaign.length) {
+        const list = document.createElement('div');
+        list.className = 'profile-grid';
+        noCampaign.forEach(m => list.appendChild(renderMissionCard(m)));
+        root.appendChild(list);
+      }
+
+      // Gruppen mit Campaign
+      getCampaigns().forEach(camp => {
+        const list = getByCampaign(camp);
+        const head = document.createElement('div');
+        head.className = 'campaign-head';
+        const title = document.createElement('h3');
+        title.textContent = '📦 Campaign: ' + camp + '  (' + list.length + '/6 Missionen)';
+        head.appendChild(title);
+        const reportBtn = document.createElement('button');
+        reportBtn.className = 'btn';
+        reportBtn.textContent = '📄 Campaign-Report';
+        reportBtn.title = 'Alle Funksprüche & BDA dieser Campaign als Text';
+        reportBtn.addEventListener('click', () => {
+          const report = campaignReport(camp);
+          if (report) window.App.copy(report);
+          else window.App.toast('Keine Missionen in dieser Campaign.', true);
+        });
+        head.appendChild(reportBtn);
+        root.appendChild(head);
+        const grid = document.createElement('div');
+        grid.className = 'profile-grid';
+        list.forEach(m => grid.appendChild(renderMissionCard(m)));
+        root.appendChild(grid);
       });
-      root.appendChild(list);
     }
   }
 
@@ -410,7 +501,7 @@
     const bi3 = document.createElement('input');
     bi3.className = 'input';
     bi3.id = 'bda-result';
-    bi3.placeholder = 'z. B. zerstört / 50% / kein Effekt';
+    bi3.placeholder = 'z. B. Destroyed / 7/10';
     bf3.appendChild(bl3); bf3.appendChild(bi3);
     const bb = document.createElement('button');
     bb.className = 'btn btn-primary';
@@ -424,7 +515,40 @@
       window.App.toast('BDA gespeichert.');
       render();
     });
-    bdaForm.appendChild(bf1); bdaForm.appendChild(bf2); bdaForm.appendChild(bf3); bdaForm.appendChild(bb);
+
+    // Schnellbewertungen
+    const quickRow = document.createElement('div');
+    quickRow.className = 'quick-row';
+    quickRow.style.marginTop = '4px';
+    const ql = document.createElement('span');
+    ql.className = 'hint';
+    ql.textContent = 'Schnell: ';
+    quickRow.appendChild(ql);
+    window.REF.bdaResults.forEach(res => {
+      const b = document.createElement('button');
+      b.className = 'quick-btn';
+      b.textContent = res;
+      b.title = 'Ergebnis-Feld setzen';
+      b.addEventListener('click', () => { bi3.value = res; bi3.dispatchEvent(new Event('input', { bubbles: true })); });
+      quickRow.appendChild(b);
+    });
+    // X/10-Auswahl
+    const tenSel = document.createElement('select');
+    tenSel.className = 'select';
+    tenSel.style.width = '90px';
+    tenSel.style.padding = '3px 6px';
+    tenSel.title = 'Bewertung X/10';
+    const tenPh = document.createElement('option');
+    tenPh.value = ''; tenPh.textContent = '…/10';
+    tenSel.appendChild(tenPh);
+    for (let i = 10; i >= 1; i--) {
+      const o = document.createElement('option');
+      o.value = i; o.textContent = i + '/10';
+      tenSel.appendChild(o);
+    }
+    tenSel.addEventListener('change', () => { if (tenSel.value) { bi3.value = tenSel.value + '/10'; bi3.dispatchEvent(new Event('input', { bubbles: true })); tenSel.value = ''; } });
+    quickRow.appendChild(tenSel);
+    bdaForm.appendChild(bf1); bdaForm.appendChild(bf2); bdaForm.appendChild(bf3); bdaForm.appendChild(quickRow); bdaForm.appendChild(bb);
     bdaPanel.appendChild(bdaForm);
 
     const bdaList = document.createElement('div');
@@ -648,6 +772,7 @@
   window.JTMissions = {
     getMissions, getActive, create, setActive, remove, update,
     addScript, addBDA, addFav, removeFav, setCheck, getCheck, setMyPos,
+    getCampaigns, getByCampaign, campaignReport,
     exportActive, importJSON, render
   };
 })();

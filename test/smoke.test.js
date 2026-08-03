@@ -69,20 +69,23 @@ setTimeout(() => {
   check(window.REF.airframesFlat.length === 10, 'Airframes geladen');
   check(window.REF.checklist.length >= 8, 'Pre-Mission-Checkliste (' + window.REF.checklist.length + ')');
 
-  // Dashboard
+  // Dashboard (Mission-first)
   const active = doc.querySelector('.view.active');
   check(active && active.id === 'view-home', 'Home-View aktiv (Dashboard)');
   const dashBtns = doc.querySelectorAll('#view-home .dash-btn');
   check(dashBtns.length === 9, 'Dashboard: 9 Schnellzugriff-Buttons');
-  check(doc.getElementById('dash-airframe-box').textContent.includes('MH-60M DAP'), 'Dashboard: Airframe-Karte');
+  check(!!doc.getElementById('home-new-name'), 'Startseite: Mission-anlegen-Formular groß (Mission first)');
+  check(!!doc.getElementById('dash-history-box'), 'Startseite: History-Panel vorhanden');
 
-  // Mission: anlegen
+  // Mission: anlegen (mit Campaign)
   window.location.hash = '#/mission';
   window.dispatchEvent(new window.HashChangeEvent('hashchange'));
   doc.getElementById('mission-new-name').value = 'Op. Test';
+  doc.getElementById('mission-new-campaign').value = 'Iron Wrath';
   doc.querySelector('#mission-root .btn-primary').click();
   check(!!window.JTMissions.getActive(), 'Mission erstellt');
   check(window.JTMissions.getActive().name === 'Op. Test', 'Mission heißt Op. Test');
+  check(window.JTMissions.getActive().campaign === 'Iron Wrath', 'Mission: Campaign gespeichert');
   check(doc.getElementById('mission-root').textContent.includes('Op. Test'), 'Mission-Ansicht zeigt Namen');
   // Funkspruch-Log
   window.JTMissions.addScript('5-Line', 'Test funkspruch');
@@ -90,9 +93,29 @@ setTimeout(() => {
   // BDA
   window.JTMissions.addBDA('BTR-42A', '0453 0976', 'zerstört');
   check(window.JTMissions.getActive().bda.length === 1, 'BDA gespeichert');
+  // BDA-Schnellknöpfe
+  check(doc.querySelectorAll('.quick-row .quick-btn').length >= 5, 'BDA-Schnellknöpfe vorhanden');
+  check(!!doc.querySelector('#mission-root select[title*="X/10"]') || [...doc.querySelectorAll('#mission-root select')].some(s => s.title && s.title.includes('/10')), 'BDA X/10-Auswahl vorhanden');
   // Favorit
   window.JTMissions.addFav('HLZ Nord', '0453 0976');
   check(window.JTMissions.getActive().favs.length === 1, 'Favorit gespeichert');
+  // Campaign-Report
+  check(window.JTMissions.getCampaigns().includes('Iron Wrath'), 'Campaign erscheint in Liste');
+  const report = window.JTMissions.campaignReport('Iron Wrath');
+  check(!!report && report.includes('CAMPAIGN REPORT') && report.includes('Op. Test'), 'Campaign-Report erzeugt');
+  check(report.includes('BTR-42A'), 'Campaign-Report enthält BDA');
+
+  // Channels
+  check(window.JTChannels.getChannels().length >= 4, 'Channels geladen (' + window.JTChannels.getChannels().length + ')');
+  check(window.JTChannels.getChannels().some(c => c.name === 'Ch. 2 TAD' && c.type === 'LR'), 'Channel Ch. 2 TAD (LR) vorhanden');
+  check(window.JTChannels.getChannels().some(c => c.type === 'SR'), 'Short-Range-Channel vorhanden');
+  check(doc.getElementById('pf-freqcas').getAttribute('list') === 'channels-list', 'Profil-Funk-Feld nutzt Channels-Datalist');
+
+  // Startseite nach Mission: zeigt Mission groß + History
+  window.location.hash = '#/home';
+  window.dispatchEvent(new window.HashChangeEvent('hashchange'));
+  check(doc.getElementById('dash-mission-box').textContent.includes('Op. Test'), 'Startseite: aktive Mission groß');
+  check(doc.getElementById('dash-history-box').textContent.includes('Op. Test'), 'Startseite: History zeigt Mission');
 
   // 5-Line: Satz-Output
   window.location.hash = '#/briefs';
@@ -207,6 +230,25 @@ setTimeout(() => {
   const docsTab = [...doc.querySelectorAll('#refs-tabs .tab')].find(t => t.textContent.includes('Dokumente'));
   docsTab.click();
   check(doc.querySelectorAll('.doc-card').length === 4, 'Refs: 4 Dokumente-Karten');
+
+  // Einstellungen: Tabs + Channels + Daten
+  window.location.hash = '#/settings';
+  window.dispatchEvent(new window.HashChangeEvent('hashchange'));
+  check(doc.querySelectorAll('#settings-root .tab').length === 3, 'Einstellungen: 3 Tabs');
+  const chTab = [...doc.querySelectorAll('#settings-root .tab')].find(t => t.textContent.includes('Channels'));
+  chTab.click();
+  check(!!doc.querySelector('#settings-root .data-table'), 'Einstellungen: Channel-Tabelle');
+  check(doc.querySelectorAll('#settings-root .data-table tbody tr').length >= 4, 'Einstellungen: Channels gerendert');
+  const dataTab = [...doc.querySelectorAll('#settings-root .tab')].find(t => t.textContent.includes('Daten'));
+  dataTab.click();
+  check(doc.querySelectorAll('#settings-root .panel').length >= 3, 'Einstellungen: Daten-Bereiche');
+  // Eigenes Ziel hinzufügen
+  const targetInput = [...doc.querySelectorAll('#settings-root input')].find(i => i.placeholder.includes('MT-LB'));
+  targetInput.value = 'T-14 Armata';
+  targetInput.dispatchEvent(new window.Event('input', { bubbles: true }));
+  const addBtn = targetInput.parentElement.querySelector('.btn-primary') || targetInput.parentElement.parentElement.querySelector('.btn-primary');
+  addBtn.click();
+  check(window.JTData.getTargets().includes('T-14 Armata'), 'Eigenes Ziel hinzugefügt');
 
   // Profile
   window.JTProfiles.renderCards('profile-list');

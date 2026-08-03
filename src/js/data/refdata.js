@@ -115,29 +115,32 @@ const REF = {
       { n: 4, key: 'desc', short: 'DESC', label: 'Target Description / Mark', rb: false,
         fields: [
           { key: 'desc', type: 'text', label: 'Beschreibung', ph: 'z. B. BTR-42A', list: 'target-list' },
+          { key: 'context', type: 'text', label: 'Lage', ph: 'z. B. in the open', list: 'context-list' },
           { key: 'mark', type: 'select', label: 'Mark', options: [
             { v: 'laser', t: 'Laser' }, { v: 'smoke', t: 'Smoke' }, { v: 'IR pointer', t: 'IR Pointer' },
             { v: 'IR strobe', t: 'IR Strobe' }, { v: 'no mark', t: 'No Mark' } ] }
         ],
         sent: (v) => {
-          if (!v.desc && !v.mark) return null;
+          if (!v.desc && !v.context && !v.mark) return null;
           const parts = ['Target is'];
           if (v.desc) parts.push(v.desc);
+          if (v.context) parts.push(v.context);
           if (v.mark) parts.push('marked by', v.mark);
           return parts.join(' ');
         } },
       { n: 5, key: 'remarks', short: 'Rmks', label: 'Remarks & Restrictions', rb: true,
         fields: [
-          { key: 'ltl', type: 'text', label: 'LTL/PTL', ph: 'z. B. 342', width: '110px' },
-          { key: 'fah', type: 'text', label: 'FAH', ph: 'z. B. 010', width: '110px' },
+          { key: 'ltl', type: 'text', label: 'LTL', ph: 'z. B. 342', width: '90px' },
+          { key: 'ltlto', type: 'text', label: '…to', ph: 'z. B. 060', width: '90px' },
+          { key: 'fah', type: 'text', label: 'FAH', ph: 'z. B. 010', width: '90px' },
           { key: 'dc', type: 'text', label: 'Danger Close', ph: 'z. B. 270 m' },
           { key: 'extra', type: 'text', label: 'Weitere', ph: 'z. B. TOT 1600 Zulu' }
         ],
         sent: (v) => {
           const p = [];
-          if (v.ltl) p.push(`Laser to target line ${v.ltl}`);
-          if (v.fah) p.push(`final attack heading ${v.fah}`);
-          if (v.dc) p.push(`danger close ${v.dc}`);
+          if (v.ltl) p.push('Laser to target line ' + v.ltl + (v.ltlto ? ' to ' + v.ltlto : ''));
+          if (v.fah) p.push('final attack heading ' + v.fah);
+          if (v.dc) p.push('danger close ' + v.dc);
           if (v.extra) p.push(v.extra);
           return p.length ? p.join(', ') : null;
         } }
@@ -603,12 +606,50 @@ const REF = {
   },
 
   // ============================================================
-  // ZIELE (Dropdown), BEWAFFNUNG (Dropdown), PHRASEN
+  // ZIELE (Dropdown) – große Liste: Fahrzeuge, Infanterie, Statik
   // ============================================================
+  targetCategories: [
+    { cat: 'Kettenfahrzeuge', items: ['T-90', 'T-72', 'T-80', 'T-55', 'BMP-2', 'BMP-1', 'BTR-42A', 'BTR-80', 'BTR-60', 'MT-LB', 'M113', 'BRDM-2', 'ZSU-23-4 Shilka', 'Tank (allgemein)'] },
+    { cat: 'Radfahrzeuge', items: ['Technikal (Pickup w/ MG)', 'Technikal (ZSU-23)', 'HMMWV', 'MRAP', 'LKW (Transport)', 'LKW (Munition)', 'Logistik-Konvoi', 'Jeep/Pickup', 'Motorrad'] },
+    { cat: 'Flugabwehr', items: ['ZSU-23-4 Shilka', 'ZU-23 (Anhänger)', 'MANPADS-Team (Igla)', 'MANPADS-Team (Stinger)', 'SA-13 Gopher (SAM)', 'SA-9 Gaskin (SAM)', 'Flugabwehr-Stellung', 'AAA-Stellung'] },
+    { cat: 'Artillerie', items: ['Mörser-Stellung (82mm)', 'Mörser-Stellung (120mm)', 'D-30 Haubitze', 'MLRS/BM-21 Grad', 'Artillerie-Beobachtungsposten'] },
+    { cat: 'Infanterie', items: ['Infanterie (Trupp)', 'Infanterie (Gruppe)', 'Infanterie (Zug)', 'ATGM-Team (Konkurs)', 'ATGM-Team (Spike)', 'Scharfschützen-Stellung', 'MG-Stellung', 'Feuerstellung', 'Beobachtungsposten (OP)', 'Kontrollpunkt (Checkpoint)'] },
+    { cat: 'Statik & Gebäude', items: ['Bunker', 'Betonbunker', 'Gebäude (allgemein)', 'Gebäude (2-stöckig)', 'Munitionsdepot', 'Kraftstoffdepot', 'Funkmast/Antenne', 'Radar-Stellung', 'Brücke', 'Straßensperre', 'Panzerabwehrhindernis', 'Hangar'] },
+    { cat: 'Luft & Boote', items: ['Hubschrauber am Boden', 'Flugzeug am Boden', 'Drohne (am Boden)', 'Start-/Landebahn', 'Schnellboot', 'Landungsboot', 'Schiff (Küste)'] }
+  ],
+  // alle Ziele flach (für Datalist & Suche)
   targets: [
-    'BTR-42A', 'BTR-80', 'BTR-60', 'T-90', 'T-72', 'T-34', 'BMP-2', 'BMP-1', 'MT-LB',
-    'Technikal (Pickup w/ MG)', 'ZU-23', 'ZSU-23-4 Shilka', 'MANPADS-Team', 'ATGM-Team',
-    'Infanterie (Trupp)', 'Mörser-Stellung', 'Bunker', 'Gebäude', 'LKW-Konvoi', 'Statische Waffe'
+    'T-90', 'T-72', 'T-80', 'T-55', 'BMP-2', 'BMP-1', 'BTR-42A', 'BTR-80', 'BTR-60', 'MT-LB', 'M113', 'BRDM-2',
+    'Technikal (Pickup w/ MG)', 'Technikal (ZSU-23)', 'HMMWV', 'MRAP', 'LKW (Transport)', 'LKW (Munition)', 'Logistik-Konvoi',
+    'ZSU-23-4 Shilka', 'ZU-23 (Anhänger)', 'MANPADS-Team (Igla)', 'SA-13 Gopher (SAM)', 'Flugabwehr-Stellung',
+    'Mörser-Stellung (82mm)', 'Mörser-Stellung (120mm)', 'D-30 Haubitze', 'MLRS/BM-21 Grad',
+    'Infanterie (Trupp)', 'Infanterie (Gruppe)', 'Infanterie (Zug)', 'ATGM-Team (Konkurs)', 'MG-Stellung', 'Beobachtungsposten (OP)', 'Kontrollpunkt',
+    'Bunker', 'Betonbunker', 'Gebäude (allgemein)', 'Munitionsdepot', 'Kraftstoffdepot', 'Funkmast/Antenne', 'Radar-Stellung', 'Brücke', 'Straßensperre', 'Hangar',
+    'Hubschrauber am Boden', 'Flugzeug am Boden', 'Schnellboot', 'Landungsboot'
+  ],
+  // Kontext/Lage des Ziels (Zusatz zur Beschreibung)
+  targetContext: [
+    'in the open', 'in a compound', 'in a building (3rd story)', 'behind cover', 'in the treeline',
+    'in a field', 'next to the road', 'on the road', 'moving north', 'moving south', 'moving east',
+    'moving west', 'stationary', 'in the town center', 'on the ridge', 'in a revetment', 'near the river',
+    'under camouflage', 'in a vehicle column', 'in a parking lot', 'at the checkpoint'
+  ],
+  // BDA-Schnellbewertungen
+  bdaResults: ['Destroyed', 'Immobilized', 'Damaged', 'No effect', 'Partial (50%)'],
+
+  // ============================================================
+  // CHANNELS (ACRE-2) – Short Range & Long Range
+  // ============================================================
+  defaultChannels: [
+    { id: 'c1', name: 'Ch. 1 Command', type: 'LR', freq: '', note: 'Command / Plt.-Funk' },
+    { id: 'c2', name: 'Ch. 2 TAD',     type: 'LR', freq: '', note: 'Tactical Air Direction – CAS' },
+    { id: 'c3', name: 'Ch. 3 MEDEVAC', type: 'LR', freq: '', note: 'Evakuierung' },
+    { id: 'c4', name: 'Ch. 4 Squad',   type: 'SR', freq: '', note: 'Trupp intern' },
+    { id: 'c5', name: 'Ch. 5 Team',    type: 'SR', freq: '', note: 'Team-Kanal' }
+  ],
+  channelTypes: [
+    { id: 'LR', label: 'Long Range (Backpack, z. B. 117F)' },
+    { id: 'SR', label: 'Short Range (Handfunk, z. B. 152/343)' }
   ],
   ordnance: [
     '114 Kilo (AGM-114K Hellfire)', '114N Kilo (AGM-114N)', 'M134 Minigun', 'M230 Chaingun (30mm)',

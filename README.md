@@ -14,7 +14,8 @@ keine Anmeldung, kein Server, keine Datenübertragung.
 | Modul | Was es kann |
 |---|---|
 | **Start (Dashboard)** | Einsatz-Zentrale: aktive Mission, dein CAS-Airframe mit Bewaffnung, große Schnellzugriff-Buttons (Fokus: 5-Line & HLZ, Briefing Area) |
-| **📋 Mission** | Jede Mission extra anlegen (Name + Karte). Sie sammelt: **Funkspruch-Log** (alle gesendeten Briefs mit Zeitstempel), **BDA-History**, **Koordinaten-Favoriten** (HLZ/IP/OP → per Klick in den Brief), **Pre-Mission-Checkliste**, **„Ich bin hier"** (Distanz/Peilung zu allen Favoriten). Export/Import als JSON. |
+| **📋 Mission** | Jede Mission extra anlegen (Name + Karte + **Campaign**). Sie sammelt: **Funkspruch-Log**, **BDA-History mit Schnellbewertungen** (Destroyed / Immobilized / X/10), **Koordinaten-Favoriten**, **Pre-Mission-Checkliste**, **„Ich bin hier"**. **Campaign-Report** (6 Missionen): alle Funksprüche + BDA als Text. Export/Import als JSON. |
+| **Start (Mission-first)** | Beim Öffnen steht die **Mission groß im Mittelpunkt** (anlegen oder Details), **History rechts daneben** – dann die Schnellzugriffe. |
 | **🚁 5-Line CAS (Rotary)** | Dein Standard-Brief. Felder: Game Plan (Type/MOA/Anzahl/Ordnance), Friendly, Target Grid, Beschreibung/Mark, Remarks (LTL/FAH/Danger Close). |
 | **🛬 HLZ Brief** | Landeplatz-Briefing: Grid, Markierung, Hindernisse, Friendly/Enemy SITREP, Security (Green/Yellow/Red). |
 | **🎯 9-Line CAS** | Fixed-Wing-Brief im Original-Format eurer Unit, Pflicht-Readbacks rot markiert. |
@@ -24,6 +25,7 @@ keine Anmeldung, kein Server, keine Datenübertragung.
 | **⌖ Grid-Rechner** | MGRS ↔ Lat/Long, Arma-Grids, Distanz & Peilung in Grad + Mil. „📌 In Brief einfügen" überträgt das Ergebnis direkt in die 5-/9-Line. |
 | **⏱ Timer / TOT** | Countdown mit automatischem Lase-Fenster (T–30 … T+30) + Piep-Alarmen. |
 | **☎ Profile** | Presets **GRANITE 10 / GRANITE 11 / FLEX** (ACRE-2-Channels, Laser 1111), Airframe-Auswahl mit Bewaffnungs-Details. |
+| **⚙ Einstellungen** | **Einstellungen** (Design, Standard-Profil, Standard-Karte) · **📻 Channels (SR/LR)** – eigene Short-/Long-Range-Kanäle anlegen (ACRE-2) · **🗄 Daten** – eigene Ziele, Ordnance, Lage-Begriffe und Callsigns eintragen (fließen überall ein). |
 | **▤ Referenzen** | Brevity (93 Begriffe, durchsuchbar), Danger Close, Höhen/Keyhole, Airframes, Funk, Verfahren + **📄 Original-PDFs zum Nachschlagen**. |
 | **⚡ Schnelligkeit** | Globale Suche (Brevity, Ziele, Favoriten, Missionen), Sidebar-Pins (Favoriten), Schnell-Buttons (CONTACT, CLEARED HOT, SHACK …), Standard-Sprüche, Auto-Fokus. |
 

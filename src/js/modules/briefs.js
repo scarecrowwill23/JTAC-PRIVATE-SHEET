@@ -116,7 +116,12 @@
         `<div class="af-row"><span>Laser</span>${p.laser || '–'}</div>`;
     }
 
-    // ---------- Datalists (nur einmal) ----------
+    // ---------- Datalists (mit eigenen Daten aus JTData gemischt) ----------
+    function getMerged(which) {
+      if (window.JTData && window.JTData['get' + which]) return window.JTData['get' + which]();
+      return which === 'Targets' ? window.REF.targets : which === 'Ordnance' ? window.REF.ordnance : window.REF.targetContext;
+    }
+
     function initDatalists() {
       const add = (id, items) => {
         const existing = document.getElementById(id);
@@ -130,10 +135,17 @@
         });
         document.body.appendChild(dl);
       };
-      add('target-list', window.REF.targets);
-      add('ordnance-list', window.REF.ordnance);
+      add('target-list', getMerged('Targets'));
+      add('ordnance-list', getMerged('Ordnance'));
+      add('context-list', getMerged('Context'));
       add('mark-list', window.REF.laserCodes.map(c => 'Lase ' + c).concat(window.REF.smokeColors.map(c => c + ' Rauch'), ['IR Pointer', 'IR Strobe', 'VS-17 Panel', 'GPS']));
       add('count-list', ['1', '2', '3', '4', '5', '6']);
+    }
+
+    /** Datalists neu aufbauen (nach Änderungen in den eigenen Daten). */
+    function refreshDatalists() {
+      if (!window.JTData) return;
+      initDatalists();
     }
 
     // ---------- Schnell-Buttons ----------
@@ -346,7 +358,7 @@
 
     return {
       init, open, copyCurrent, applyGrid, applyGridResult, insertTarget,
-      send, resetForm,
+      send, resetForm, refreshDatalists,
       current: () => current,
       getLastScript: () => lastScript,
       onProfileChange: () => {

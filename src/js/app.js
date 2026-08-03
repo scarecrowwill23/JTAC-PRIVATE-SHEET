@@ -48,7 +48,7 @@
   }
 
   // ---------- Router ----------
-  const routes = ['home', 'mission', 'casflow', 'briefs', 'briefing', 'grid', 'timer', 'profile', 'refs'];
+  const routes = ['home', 'mission', 'casflow', 'briefs', 'briefing', 'grid', 'timer', 'profile', 'refs', 'settings'];
 
   /** Brief öffnen – je nach Gruppe (Haupt oder Briefing Area). */
   function openBrief(tab) {
@@ -61,41 +61,125 @@
     }
   }
 
-  function renderDashboard() {
-    const p = window.JTProfiles.getActive();
-    const m = window.JTMissions.getActive();
-
-    // Mission-Box
+  /** Mission-Feld auf der Startseite: groß + (bei aktiver Mission) Details. */
+  function renderMissionBox() {
     const mbox = document.getElementById('dash-mission-box');
-    if (mbox) {
-      if (m) {
-        mbox.innerHTML = `
-          <div class="dash-mission-grid">
-            <div class="kv"><span>Mission</span><b>${m.name}</b></div>
-            <div class="kv"><span>Karte</span><b>${window.JTProfiles.mapName(m.map)}</b></div>
-            <div class="kv"><span>Funksprüche</span><b>${m.scripts.length}</b></div>
-            <div class="kv"><span>BDA</span><b>${m.bda.length}</b></div>
-            <div class="kv"><span>Profil</span><b>${p.name}</b></div>
-            <div class="kv"><span>Funk</span><b>${p.freqCas || '–'}</b></div>
-          </div>`;
-      } else {
-        mbox.innerHTML = '<p class="hint">Keine Mission aktiv – <a href="#/mission">hier eine anlegen</a>, dann sammelt die App alles.</p>';
-      }
+    if (!mbox) return;
+    const m = window.JTMissions.getActive();
+    const p = window.JTProfiles.getActive();
+
+    if (!m) {
+      // Große "Mission anlegen"-Box
+      mbox.innerHTML = `
+        <p class="lead" style="margin-bottom:12px">Noch keine Mission aktiv. Lege eine an – dann sammelt die App alle Funksprüche, BDA & Favoriten.</p>
+        <div class="form">
+          <div class="field-row">
+            <div class="field grow">
+              <label class="field-label">Name</label>
+              <input id="home-new-name" class="input" placeholder="z. B. Op. Iron Wrath">
+            </div>
+            <div class="field">
+              <label class="field-label">Karte</label>
+              <select id="home-new-map" class="select"></select>
+            </div>
+            <div class="field">
+              <label class="field-label">Campaign (optional)</label>
+              <input id="home-new-campaign" class="input" placeholder="z. B. Iron Wrath" list="home-campaign-list">
+            </div>
+          </div>
+          <div class="field-row">
+            <button id="home-start" class="btn btn-primary big">🚀 Mission starten</button>
+          </div>
+        </div>`;
+      const mapSel = document.getElementById('home-new-map');
+      const setMap = window.JTSettings.getSettings().defaultMap || 'altis';
+      window.REF.maps.filter(x => x.id !== 'custom').forEach(x => {
+        const o = document.createElement('option');
+        o.value = x.id; o.textContent = x.name;
+        mapSel.appendChild(o);
+      });
+      mapSel.value = setMap;
+
+      const dl = document.createElement('datalist');
+      dl.id = 'home-campaign-list';
+      window.JTMissions.getCampaigns().forEach(c => {
+        const o = document.createElement('option'); o.value = c; dl.appendChild(o);
+      });
+      mbox.appendChild(dl);
+
+      document.getElementById('home-start').addEventListener('click', () => {
+        const name = document.getElementById('home-new-name').value.trim();
+        const map = document.getElementById('home-new-map').value;
+        const campaign = document.getElementById('home-new-campaign').value.trim();
+        window.JTMissions.create(name, map, campaign);
+        App.toast('Mission gestartet: ' + window.JTMissions.getActive().name);
+        onMissionChange();
+        location.hash = '#/mission';
+      });
+      return;
     }
 
-    const box = document.getElementById('dash-airframe-box');
-    if (box) {
-      const af = window.REF.findAirframe(p.cas);
-      if (!af) {
-        box.innerHTML = '<span class="hint">Kein Airframe-Callsign im Profil hinterlegt.</span>';
-      } else {
-        box.innerHTML =
-          `<div class="af-head"><b>${af.cs}</b> — ${af.name} <span class="af-cat">${af.cat}</span></div>` +
-          `<div class="af-row"><span>Bewaffnung</span>${af.info}</div>` +
-          `<div class="af-row"><span>Features</span>${af.feat}</div>` +
-          `<div class="af-row"><span>Crew</span>${af.crew}</div>`;
+    // Aktive Mission groß anzeigen
+    mbox.innerHTML = `
+      <div class="dash-mission-big">
+        <div class="dash-mission-title">${m.name}${m.campaign ? '  <span class="chip">' + m.campaign + '</span>' : ''}</div>
+        <div class="dash-mission-grid">
+          <div class="kv"><span>Karte</span><b>${window.JTProfiles.mapName(m.map)}</b></div>
+          <div class="kv"><span>Funksprüche</span><b>${m.scripts.length}</b></div>
+          <div class="kv"><span>BDA</span><b>${m.bda.length}</b></div>
+          <div class="kv"><span>Favoriten</span><b>${m.favs.length}</b></div>
+          <div class="kv"><span>Profil</span><b>${p.name}</b></div>
+          <div class="kv"><span>Funk</span><b>${p.freqCas || '–'}</b></div>
+          <div class="kv"><span>JTAC</span><b>${p.jtac || '–'}</b></div>
+          <div class="kv"><span>Laser</span><b>${p.laser || '–'}</b></div>
+        </div>
+        <div class="field-row" style="margin-top:12px">
+          <button id="home-open-mission" class="btn btn-primary">📋 Zur Mission</button>
+          <button id="home-end-mission" class="btn btn-ghost">Mission beenden</button>
+        </div>
+      </div>`;
+    document.getElementById('home-open-mission').addEventListener('click', () => { location.hash = '#/mission'; });
+    document.getElementById('home-end-mission').addEventListener('click', () => {
+      if (confirm('Mission "' + m.name + '" beenden? Sie bleibt gespeichert.')) {
+        window.JTMissions.setActive(null);
+        onMissionChange();
       }
+    });
+  }
+
+  /** History-Panel auf der Startseite (letzte Missionen). */
+  function renderHistoryBox() {
+    const box = document.getElementById('dash-history-box');
+    if (!box) return;
+    const missions = window.JTMissions.getMissions();
+    if (!missions.length) {
+      box.innerHTML = '<p class="hint">Noch keine Missionen – die History füllt sich nach deinen Einsätzen.</p>';
+      return;
     }
+    const recent = [...missions].sort((a, b) => b.createdAt - a.createdAt).slice(0, 6);
+    box.innerHTML = '';
+    recent.forEach(m => {
+      const row = document.createElement('button');
+      row.className = 'history-row';
+      row.innerHTML = `<b>${m.name}</b><span>${new Date(m.createdAt).toLocaleDateString('de-DE')} · ${m.scripts.length} Spruch · ${m.bda.length} BDA${m.campaign ? ' · ' + m.campaign : ''}</span>`;
+      row.addEventListener('click', () => {
+        window.JTMissions.setActive(m.id);
+        onMissionChange();
+        location.hash = '#/mission';
+      });
+      box.appendChild(row);
+    });
+    const link = document.createElement('button');
+    link.className = 'btn btn-ghost small';
+    link.style.marginTop = '8px';
+    link.textContent = 'Alle Missionen →';
+    link.addEventListener('click', () => { location.hash = '#/mission'; });
+    box.appendChild(link);
+  }
+
+  function renderDashboard() {
+    renderMissionBox();
+    renderHistoryBox();
   }
 
   /** Sidebar-Pins: Favoriten-Punkte der aktiven Mission + Schnellzugriff. */
@@ -213,6 +297,7 @@
     if (name === 'mission') window.JTMissions.render();
     if (name === 'refs') window.JTRefs.render();
     if (name === 'casflow') window.JTCasFlow.renderStep();
+    if (name === 'settings') window.JTSettings.render(document.getElementById('settings-root'));
     if (name === 'profile') {
       window.JTProfiles.renderCards('profile-list');
       window.JTProfiles.renderEditForm();
@@ -333,18 +418,38 @@
       App.toast('Profil: ' + window.JTProfiles.getActive().name);
     });
 
-    const dl = document.createElement('datalist');
-    dl.id = 'airframe-cs';
-    window.REF.airframesFlat.forEach(a => {
-      const o = document.createElement('option');
-      o.value = a.cs;
-      o.label = a.name + ' – ' + a.info;
-      dl.appendChild(o);
-    });
-    document.body.appendChild(dl);
+    window.App.buildAirframeList = function () {
+      const existing = document.getElementById('airframe-cs');
+      if (existing) existing.remove();
+      const dl = document.createElement('datalist');
+      dl.id = 'airframe-cs';
+      const air = window.JTData ? window.JTData.getAirframes() : window.REF.airframesFlat;
+      air.forEach(a => {
+        const o = document.createElement('option');
+        o.value = a.cs;
+        o.label = (a.name || '') + (a.info ? ' – ' + a.info : '');
+        dl.appendChild(o);
+      });
+      document.body.appendChild(dl);
+    };
+    window.App.buildAirframeList();
 
     document.getElementById('pf-cas').addEventListener('input', () => {
       window.JTProfiles.renderAirframeHint();
+    });
+
+    // Channels-Auswahl für die Funk-Felder (Datalist aus den Channels)
+    const chDl = document.createElement('datalist');
+    chDl.id = 'channels-list';
+    window.JTChannels.getChannels().forEach(c => {
+      const o = document.createElement('option');
+      o.value = c.name + (c.freq ? '  (' + c.freq + ')' : '');
+      chDl.appendChild(o);
+    });
+    document.body.appendChild(chDl);
+    ['pf-freqcas', 'pf-freqmed'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.setAttribute('list', 'channels-list');
     });
 
     document.getElementById('profile-save').addEventListener('click', () => {
@@ -421,6 +526,9 @@
         App.toast('Kein Funkspruch in dieser Ansicht.', true);
       }
     });
+
+    // Standard-Profil aus den Einstellungen anwenden (beim Start)
+    if (window.JTSettings && window.JTSettings.applyDefaultProfile) window.JTSettings.applyDefaultProfile();
 
     window.addEventListener('hashchange', route);
     route();
