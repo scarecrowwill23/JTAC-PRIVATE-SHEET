@@ -64,7 +64,22 @@ setTimeout(() => {
 
   // Router
   const active = doc.querySelector('.view.active');
-  check(active && active.id === 'view-home', 'Home-View aktiv');
+  check(active && active.id === 'view-home', 'Home-View aktiv (Dashboard)');
+
+  // Dashboard
+  const dashBtns = doc.querySelectorAll('#view-home .dash-btn');
+  check(dashBtns.length === 6, 'Dashboard: 6 Schnellzugriff-Buttons');
+  check(doc.getElementById('dash-profil').textContent.includes('GRANITE 10'), 'Dashboard: Profil angezeigt');
+  check(doc.getElementById('dash-jtac').textContent.includes('GRANITE 10'), 'Dashboard: JTAC-Callsign');
+  check(doc.getElementById('dash-laser').textContent.includes('1111'), 'Dashboard: Laser-Code');
+  check(doc.getElementById('dash-airframe-box').textContent.includes('MH-60M DAP'), 'Dashboard: Airframe-Karte');
+  // Dashboard-Klick → 9-Line öffnen
+  const casBtn = [...dashBtns].find(b => b.textContent.includes('9-Line'));
+  casBtn.click();
+  check(window.JTBriefs.current() === 'cas9', 'Dashboard: 9-Line geöffnet');
+  const medBtn = [...doc.querySelectorAll('#view-home .dash-btn')].find(b => b.textContent.includes('MEDEVAC'));
+  medBtn.click();
+  check(window.JTBriefs.current() === 'medevac', 'Dashboard: MEDEVAC geöffnet');
 
   // Navigation durchklicken
   ['casflow', 'briefs', 'grid', 'timer', 'profile', 'refs'].forEach(r => {

@@ -100,6 +100,20 @@
     if (pre) window.App.copy(pre.dataset.plain || pre.textContent);
   }
 
+  /** Bestimmtes Format öffnen (z. B. über Dashboard/Sidebar). */
+  function open(id) {
+    if (!FORMATS.find(f => f.id === id)) id = 'cas9';
+    current = id;
+    renderTabs();
+    buildForm(current);
+    // erstes leeres Eingabefeld fokussieren → sofort losschreiben (Tastatur-Schnelligkeit)
+    requestAnimationFrame(() => {
+      const form = document.getElementById('brief-form');
+      const input = form && form.querySelector('.field-row input:not([type=hidden])');
+      if (input && !input.value) input.focus();
+    });
+  }
+
   function init() {
     renderTabs();
     buildForm(current);
@@ -111,5 +125,5 @@
     };
   }
 
-  window.JTBriefs = { init, copyCurrent, current: () => current };
+  window.JTBriefs = { init, open, copyCurrent, current: () => current };
 })();

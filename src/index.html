@@ -14,7 +14,7 @@
       <span class="brand-mark">JT</span>
       <div class="brand-text">
         <span class="brand-title">JTAC&nbsp;PRIVATE&nbsp;SHEET</span>
-        <span class="brand-sub" id="brand-sub">CGF 160th SOAR · v0.3</span>
+        <span class="brand-sub" id="brand-sub">CGF 160th SOAR · v0.4</span>
       </div>
     </div>
 
@@ -34,8 +34,9 @@
     <nav class="sidebar" id="sidebar">
       <div class="nav-group">
         <a href="#/home"      class="nav-item" data-route="home"><span class="nav-ico">▦</span><span>Start</span></a>
+        <a href="#/briefs"    class="nav-item" data-route="briefs" data-tab="cas9"><span class="nav-ico">🎯</span><span>9-Line&nbsp;CAS</span></a>
+        <a href="#/briefs"    class="nav-item" data-route="briefs" data-tab="medevac"><span class="nav-ico">✚</span><span>MEDEVAC</span></a>
         <a href="#/casflow"   class="nav-item" data-route="casflow"><span class="nav-ico">➤</span><span>12-Schritte&nbsp;CAS</span></a>
-        <a href="#/briefs"    class="nav-item" data-route="briefs"><span class="nav-ico">🎯</span><span>Briefs&nbsp;&amp;&nbsp;Formulare</span></a>
         <a href="#/grid"      class="nav-item" data-route="grid"><span class="nav-ico">⌖</span><span>Grid-Rechner</span></a>
         <a href="#/timer"     class="nav-item" data-route="timer"><span class="nav-ico">⏱</span><span>Timer&nbsp;/&nbsp;TOT</span></a>
         <a href="#/profile"   class="nav-item" data-route="profile"><span class="nav-ico">☎</span><span>Profile&nbsp;/&nbsp;Netze</span></a>
@@ -50,53 +51,56 @@
     <!-- Inhalt -->
     <main class="content">
 
-      <!-- ===== START ===== -->
+      <!-- ===== START (Dashboard) ===== -->
       <section class="view" id="view-home">
-        <h1>Start</h1>
-        <p class="lead">Dein JTAC-Büro für Arma&nbsp;3 – basierend auf den Dokumenten deiner Unit (CGF 160th SOAR, 24th STS, ATG, TFW 18E). Alles läuft lokal, kein Internet nötig.</p>
-
-        <div class="card-grid">
-          <a class="card" href="#/casflow">
-            <div class="card-ico">➤</div>
-            <div class="card-title">12-Schritte-CAS</div>
-            <div class="card-text">Der komplette geführte Ablauf: Check-in → SITREP → Game Plan → Brief → Angriff → BDA.</div>
-          </a>
-          <a class="card" href="#/briefs">
-            <div class="card-ico">🎯</div>
-            <div class="card-title">Briefs &amp; Formulare</div>
-            <div class="card-text">9-Line CAS, 5-Line, MEDEVAC, Gunship, CCA, HLZ/ALZ, Airdrop, Call for Fire – mit Pflicht-Readback-Kennzeichnung.</div>
-          </a>
-          <a class="card" href="#/grid">
-            <div class="card-ico">⌖</div>
-            <div class="card-title">Grid-Rechner</div>
-            <div class="card-text">MGRS ↔ Lat/Long, Distanz &amp; Peilung in Grad + Mil, Arma-Grids.</div>
-          </a>
-          <a class="card" href="#/timer">
-            <div class="card-ico">⏱</div>
-            <div class="card-title">Timer / TOT</div>
-            <div class="card-text">Time-on-Target-Countdown mit Lase-Fenster T–30 bis T+30.</div>
-          </a>
-          <a class="card" href="#/profile">
-            <div class="card-ico">☎</div>
-            <div class="card-title">Profile &amp; Netze</div>
-            <div class="card-text">Callsigns, Frequenzen, Laser-Codes, Karten-Voreinstellung – bis zu 3 Profile.</div>
-          </a>
-          <a class="card" href="#/refs">
-            <div class="card-ico">▤</div>
-            <div class="card-title">Referenzen</div>
-            <div class="card-text">Brevity-Wörterbuch, Danger-Close-Tabelle, Airframes, Höhenblöcke, Funk, Verfahren.</div>
-          </a>
+        <div class="dash-head">
+          <div>
+            <h1>Einsatz-Zentrale</h1>
+            <p class="lead">Alles Wichtige auf einen Blick – Profil, Airframe und Schnellzugriff auf deine Werkzeuge.</p>
+          </div>
+          <button id="dash-copy" class="btn btn-primary big" title="Kopiert den Funkspruch des zuletzt geöffneten Briefs (Standard: 9-Line CAS)">⧉ Funkspruch kopieren</button>
         </div>
 
-        <div class="panel">
-          <h2>Kurz &amp; knapp</h2>
-          <ul class="checklist">
-            <li><b>Profil wählen</b> (oben rechts) – Callsigns &amp; Frequenzen fließen automatisch in die Formulare.</li>
-            <li><b>12-Schritte-CAS</b> führt dich durch den kompletten Einsatzablauf – Schritt für Schritt.</li>
-            <li><b>Briefs</b>: Formular ausfüllen → Live-Funkspruch → <b>⧉ kopieren</b>.</li>
-            <li><b>Pflicht-Readbacks</b> sind in den Formularen rot markiert.</li>
-            <li><b>Referenzen</b>: Danger Close nachschlagen, Brevity durchsuchen, Airframes der 160th SOAR.</li>
-          </ul>
+        <!-- Aktive Mission -->
+        <div class="dash-grid">
+          <div class="panel dash-mission">
+            <h2>Aktive Mission</h2>
+            <div class="dash-mission-grid">
+              <div class="kv"><span>Profil</span><b id="dash-profil">–</b></div>
+              <div class="kv"><span>JTAC</span><b id="dash-jtac">–</b></div>
+              <div class="kv"><span>Funk (CAS)</span><b id="dash-freq">–</b></div>
+              <div class="kv"><span>Laser</span><b id="dash-laser">–</b></div>
+              <div class="kv"><span>Karte</span><b id="dash-map">–</b></div>
+              <div class="kv"><span>MEDEVAC</span><b id="dash-med">–</b></div>
+            </div>
+            <div class="hint">Profil wechseln: oben rechts oder unter <a href="#/profile">Profile &amp; Netze</a>.</div>
+          </div>
+
+          <div class="panel dash-airframe">
+            <h2>Dein CAS-Luftfahrzeug</h2>
+            <div id="dash-airframe-box">Kein Airframe-Callsign im Profil hinterlegt.</div>
+          </div>
+        </div>
+
+        <!-- Schnellzugriff -->
+        <h2 class="dash-h2">Schnellzugriff</h2>
+        <div class="dash-actions">
+          <button class="dash-btn dash-primary" data-goto="briefs" data-tab="cas9"><span class="dash-ico">🎯</span><span class="dash-t1">9-Line CAS</span><span class="dash-t2">Brief sofort ausfüllen &amp; rausgeben</span></button>
+          <button class="dash-btn" data-goto="briefs" data-tab="medevac"><span class="dash-ico">✚</span><span class="dash-t1">MEDEVAC</span><span class="dash-t2">Evakuierungs-Briefing</span></button>
+          <button class="dash-btn" data-goto="grid"><span class="dash-ico">⌖</span><span class="dash-t1">Grid-Rechner</span><span class="dash-t2">Distanz &amp; Peilung, Umrechnung</span></button>
+          <button class="dash-btn" data-goto="timer"><span class="dash-ico">⏱</span><span class="dash-t1">Timer / TOT</span><span class="dash-t2">Countdown mit Lase-Fenster</span></button>
+          <button class="dash-btn" data-goto="casflow"><span class="dash-ico">➤</span><span class="dash-t1">12-Schritte-CAS</span><span class="dash-t2">Kompletter geführter Ablauf</span></button>
+          <button class="dash-btn" data-goto="refs"><span class="dash-ico">▤</span><span class="dash-t1">Referenzen</span><span class="dash-t2">Brevity, Danger Close, Airframes</span></button>
+        </div>
+
+        <!-- Kompakt-Tipp -->
+        <div class="panel dash-tip">
+          <h2>So funktioniert's in 3 Schritten</h2>
+          <ol class="dash-steps">
+            <li><b>Profil prüfen</b> (oben rechts) – Callsigns, Funk &amp; Laser stehen automatisch.</li>
+            <li><b>9-Line ausfüllen</b> – die roten ⚠-Zeilen muss der Pilot wiederholen.</li>
+            <li><b>⧉ Kopieren</b> – Funkspruch liegt in der Zwischenablage, direkt losfunken.</li>
+          </ol>
         </div>
       </section>
 

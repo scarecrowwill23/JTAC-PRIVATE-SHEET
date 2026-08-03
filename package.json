@@ -1,6 +1,6 @@
 {
   "name": "jtac-private-sheet",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "JTAC Werkzeug für Arma 3 – private Desktop-App",
   "main": "main.js",
   "author": "Private",

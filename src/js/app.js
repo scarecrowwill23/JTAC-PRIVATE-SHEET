@@ -50,6 +50,55 @@
   // ---------- Router ----------
   const routes = ['home', 'casflow', 'briefs', 'grid', 'timer', 'profile', 'refs'];
 
+  /** Dashboard (Start) rendern: aktive Mission + Airframe-Karte. */
+  function renderDashboard() {
+    const p = window.JTProfiles.getActive();
+    const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v || '–'; };
+    set('dash-profil', p.name);
+    set('dash-jtac', p.jtac);
+    set('dash-freq', p.freqCas);
+    set('dash-laser', p.laser);
+    set('dash-map', window.JTProfiles.mapName(p.map));
+    set('dash-med', p.med);
+
+    const box = document.getElementById('dash-airframe-box');
+    if (!box) return;
+    const af = window.REF.findAirframe(p.cas);
+    if (!af) {
+      box.innerHTML = '<span class="hint">Kein Airframe-Callsign im Profil hinterlegt.</span>';
+      return;
+    }
+    box.innerHTML =
+      `<div class="af-head"><b>${af.cs}</b> — ${af.name} <span class="af-cat">${af.cat}</span></div>` +
+      `<div class="af-row"><span>Bewaffnung</span>${af.info}</div>` +
+      `<div class="af-row"><span>Features</span>${af.feat}</div>` +
+      `<div class="af-row"><span>Crew</span>${af.crew}</div>`;
+  }
+
+  /** Klick-Handler für Dashboard-Buttons & Sidebar-Verknüpfungen (data-goto / data-tab). */
+  function initGoButtons() {
+    document.querySelectorAll('[data-goto]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tab = btn.dataset.tab;
+        if (tab && window.JTBriefs) window.JTBriefs.open(tab);
+        location.hash = '#/' + btn.dataset.goto;
+      });
+    });
+    // Sidebar-Links mit data-tab (9-Line / MEDEVAC)
+    document.querySelectorAll('.nav-item[data-tab]').forEach(a => {
+      a.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (window.JTBriefs) window.JTBriefs.open(a.dataset.tab);
+        location.hash = '#/briefs';
+      });
+    });
+    const dashCopy = document.getElementById('dash-copy');
+    if (dashCopy) dashCopy.addEventListener('click', () => {
+      // letzten Funkspruch aus dem aktiven Brief kopieren
+      if (window.JTBriefs) window.JTBriefs.copyCurrent();
+    });
+  }
+
   function route() {
     const hash = (location.hash || '#/home').replace('#/', '');
     const name = routes.includes(hash) ? hash : 'home';
@@ -59,6 +108,7 @@
     document.querySelectorAll('.nav-item').forEach(a => {
       a.classList.toggle('active', a.dataset.route === name);
     });
+    if (name === 'home') renderDashboard();
     if (name === 'refs') window.JTRefs.render();
     if (name === 'casflow') window.JTCasFlow.renderStep();
     if (name === 'profile') {
@@ -219,6 +269,7 @@
     if (zoneSel) zoneSel.value = window.JTProfiles.getActive().map || 'altis';
     if (window.JTBriefs && window.JTBriefs.onProfileChange) window.JTBriefs.onProfileChange();
     if (window.JTCasFlow) window.JTCasFlow.renderPreview();
+    renderDashboard();
     if (window.jtacAPI && window.jtacAPI.setTitle) {
       window.jtacAPI.setTitle('JTAC Private Sheet – ' + window.JTProfiles.getActive().name);
     }
@@ -231,6 +282,7 @@
     initTheme();
     initGrid();
     initProfilesUI();
+    initGoButtons();
     window.JTTimer.init();
     window.JTBriefs.init();
     window.JTCasFlow.init();
