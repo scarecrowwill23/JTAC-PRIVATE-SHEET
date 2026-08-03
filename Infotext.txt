@@ -1,0 +1,152 @@
+Das ist ein hervorragendes Projekt für eine App! Als KI-Assistent helfe ich dir sehr gerne dabei, diese extrem umfangreichen und detaillierten Dokumente in eine klare, logische Struktur zu gießen. Für eine JTAC-Assistenz-App solltest du die Informationen in logische Module unterteilen.Hier ist die strukturierte Liste aller relevanten JTAC-Informationen aus deinen Dokumenten, direkt aufbereitet für die Architektur deiner App:1. Der Standard-Ablauf: Die 12 Schritte des CASDies ist der rote Faden für jeden JTAC-Einsatz und eignet sich perfekt als Haupt-Workflow in deiner App:  Routing & Safety of Flight: Flugroute und Sicherheit.  CAS Check-in: Pilot meldet sich mit Flugzeugtyp, Bewaffnung und Verweildauer (Playtime).  Situation Update (SITREP): Nach dem "TEFACHR"-Format (Threat, Enemy, Friendly, Artillery, Clearance Authority, Hazards, Remarks).  Game Plan: Angriffsart (BOC/BOT) und Kontrolltyp (Type 1, 2, 3).  CAS Brief: Übermittlung der 9-Line oder 5-Line.  Remarks & Restrictions: Zusätzliche Einschränkungen und Bemerkungen.  Readbacks: Pilot muss zwingend bestimmte Parameter wiederholen.  Target Correlation / Talk-On: Abgleich, dass Pilot und JTAC dasselbe Ziel sehen.  Attack: Der eigentliche Angriff ("Cleared Hot" / "Cleared to Engage").  Assess Effects: Bewertung des Treffers (z.B. "Splash", "Shack").  BDA (Battle Damage Assessment): Schadensbewertung im "SALT-R"-Format (Size, Activity, Location, Time, Remarks).  Routing & Safety of Flight: Zuweisung einer neuen Route oder Halteposition (HA/BP).  2. Briefing-Formate (Die Kern-Formulare der App)A. 9-Line CAS Brief (Für Fixed-Wing / Flugzeuge)Die Linien 4, 6 und jegliche Restriktionen MÜSSEN vom Piloten wiederholt (Readback) werden.  ZeileInhaltDetails1IP / BPInitial Point oder Battle Position.  2Heading / OffsetAngriffsrichtung in Grad (ggf. mit Offset links/rechts).  3DistanceEntfernung vom IP zum Ziel.  4Target ElevationZielhöhe in MSL (Mean Sea Level) - MANDATORY READBACK.  5Target DescriptionBeschreibung des Ziels (z.B. T-90, Infanterie).  6Target CoordinatesGrid/Koordinaten des Ziels - MANDATORY READBACK.  7Mark / Terminal GuidanceMarkierungstyp (Laser Code, Rauch, IR Pointer).  8Friendly LocationPosition der verbündeten Truppen (Referenziert vom Ziel, keine direkten Grids nennen!).  9EgressAusweichroute / Abflugrichtung für den Piloten.  B. 5-Line CAS Brief (Für Rotary-Wing / Helikopter & AC-130)Muss oft als eine einzige Transmission gesendet werden.  ZeileInhaltDetails1Observer / Game PlanEigene Callsign, Typ der Kontrolle (Type 1,2,3), MOA, Waffenart.  2Friendly Location / MarkEigene Position & Markierung (z.B. IR Strobe).  3Target LocationZielposition (Bearing/Distanz oder Grid).  4Target Description / MarkBeschreibung des Ziels und Zielmarkierung (Laser, IR Pointer).  5Remarks & RestrictionsLTL/PTL (Laser/Pointer Target Line), Danger Close, Gefahren, Final Attack Heading.  C. 9-Line MEDEVAC / CASEVAC (Medizinische Evakuierung)Line 1: Location of Pickup Site (Grid).  Line 2: Requesting Callsign & Frequency.  Line 3: Patients by Precedence (A: Urgent, B: Urgent Surgical, C: Priority, D: Routine, E: Convenience).  Line 4: Special Equipment Required (A: None, B: Hoist, C: Extraction, D: Ventilation).  Line 5: Patients by Type (Litter vs. Ambulatory).  Line 6: Security at Pickup Site (N: No enemy, P: Possible enemy, E: Enemy in area, X: Enemy/Escort required).  Line 7: Method of Marking (A: Panel, B: Pyro, C: Smoke, D: None, E: Other).  Line 8: Patient Nationality/Status (A: US Mil, B: US Civ, C: Non-US Mil, D: Non-US Civ, E: POW).  Line 9: CBRN Status (N: Nuclear, B: Biological, C: Chemical).  3. Kontrolltypen & Angriffsarten (Tactics & Control)Kontrolltypen (Type of Control):Type 1: JTAC MUSS das Ziel UND das angreifende Flugzeug sehen. Erteilt "Cleared Hot".  Type 2: JTAC muss ENTWEDER das Flugzeug ODER das Ziel sehen. Erteilt "Cleared Hot".  Type 3: JTAC sieht WEDER das Ziel NOCH das Flugzeug zwingend. Erlaubt mehrere Angriffe mit "Cleared to Engage".  Angriffsmethoden (Method of Attack - MOA):BOC (Bomb On Coordinate): Pilot wirft Waffe blind auf vorher festgelegte Koordinaten ab (oft GPS-Waffen, 8- bis 10-stellige Grids).  BOT (Bomb On Target): Pilot muss das Ziel selbst visuell identifizieren (durch Sensoren oder Augen).  4. Danger Close Parameter (Sicherheitsabstände)Wenn ein Ziel innerhalb dieser Radien zu eigenen Truppen liegt, muss der JTAC "Cleared Danger Close" sowie die Initialen des Commanders funken. Standardwert (falls nicht gelistet): 400 Meter.  Bomben:MK-82: 285 Meter.  GBU-12 (Laser 500lb): 270 Meter.  GBU-31 (GPS 2000lb): 465 Meter.  GBU-32 (GPS 1000lb): 340 Meter.  GBU-38 (GPS 500lb): 270 Meter.  GBU-54 (GPS/Laser 500lb): 270 - 280 Meter.  Raketen (Rockets/Missiles):Hydra 70 (Ungelenkt): 270 Meter.  APKWS (Laser Hydra): 105 Meter.  AGM-65 Maverick: 175 Meter.  AGM-114 K/N (Hellfire): 115 Meter.  Bordgeschütze (Guns):20mm / 25mm / 30mm: ca. 60 - 200 Meter (AC-130 30mm = 100m).  105mm Howitzer (AC-130): 155 - 160 Meter.  5. Brevity Code (Wichtiges Funk-Wörterbuch)Ein Glossar-Feature ist für so eine App Gold wert. Hier die wichtigsten Begriffe:Pickle: Abwurf einer Bombe durch den Piloten.  Rifle: Abfeuern einer AGM (Luft-Boden-Rakete) durch den Piloten.  Guns: Einsatz von Bordkanonen.  Winchester: Flugzeug hat keine Munition mehr.  Bingo: Flugzeug hat nur noch minimalen Treibstoff und muss zur Basis (RTB).  Shack / Splash: JTAC bestätigt, dass die Munition im Ziel eingeschlagen ist.  Sparkle: Zielmarkierung mit IR-Pointer.  Snake: IR-Pointer oszillieren / wackeln lassen, damit Pilot ihn besser sieht.  Tally: Pilot sieht das feindliche Ziel.  No Joy: Pilot sieht das Ziel nicht.  Visual: Sichten einer verbündeten Position.  Blind: Pilot sieht verbündete Einheiten nicht.  Ten Seconds: Vorwarnung für den Piloten: "Laser ON" in 10 Sekunden.  Spot: Pilot bestätigt, dass er den Laser erfasst hat.  
+1. Transport Variants
+
+MH-60M
+
+    Callsign: PRINCE 6-X
+
+    Armaments & Kapazität: 2x M134 (5000 RND) | Seats 14 PAX
+
+    Features: Laser (Capable), IR (Capable), FRIES (Capable)
+
+    Crew Requirements: 1x Pilot | 1x Co Pilot (Optional)
+
+MH-47G
+
+    Callsign: BUFFALO 2-X
+
+    Armaments & Kapazität: 2x M134 (5000 RND) | Seats 57 PAX
+
+    Zusätzliche Kapazität: MRZR4 x2, Assault Boat x1
+
+    Features: Laser (Capable), IR (Capable)
+
+    Crew Requirements: 2x Crew (Pilot, Co-Pilot) (Required)
+
+MH-6M
+
+    Callsign: VALIANT 5-X
+
+    Transport Capabilities: Seats 9 PAX
+
+    Features: Laser (Capable), IR (Capable)
+
+    Crew Requirements: 1x Pilot | 1x Co Pilot (Optional)
+
+MH-60M MEDEVAC
+
+    Callsign: SPIRIT 7-X
+
+    Transport Capacity: Seats 14 PAX
+
+    Features: (Keine weiteren in der Liste sichtbar)
+
+2. Close Air Support Variants
+
+MH-60M DAP
+
+    Callsign: ARCHER 3-X
+
+    Armaments:
+
+        2x M134 (5000 RNDS) | Seats 2 PAX
+
+        1x M230 Chaingun (300 RNDS)
+
+        1x M229 Hydras (19 Hydras)
+
+    Features: Laser (Capable), IR (Capable)
+
+    Crew Requirements: 1x Pilot | 1x Co Pilot (Optional)
+
+MH-60M DAP MLASS
+
+    Callsign: LANCER 4-X
+
+    Armaments:
+
+        2x M134 (5000 RND) | Seats 2 PAX
+
+        M230 Chaingun (300 RND)
+
+        M229 Hydras (19x)
+
+        AGM-144K (Hellfire) (8x)
+
+        AGM-114N (Hellfire) (8x)
+
+    Features: IR (Capable), Laser (Capable)
+
+    Crew Requirements: 1x Pilot | 1x Co Pilot (Optional)
+
+AH-6M
+
+    Callsign: LYNX 8-X
+
+    Armaments:
+
+        2x M134 (500 RNDS) | Seats 2 PAX
+
+        M151 Hydras (M260) (14x)
+
+    Features: Laser (Capable), IR (Capable)
+
+    Crew Requirements: (Keine spezifische Angabe sichtbar, jedoch 2 Sitze angegeben)
+
+3. Other Airframes
+
+AC-130
+
+    Callsign: GHOSTRIDER 1-X
+
+    Armaments:
+
+        2x AGM 144K Hellfires (8x Hellfires)
+
+        1x GAU-23A 30mm Chaingun (2500+ RNDS)
+
+        GAU-XX 105mm (120 RND)
+
+    Features: Laser (Capable), IR (Capable)
+
+    Crew Requirements: 3x Crew (Pilot, CSO, WSO)
+
+MC-130J Commando II
+
+    Callsign: TBD 1-X (WIP)
+
+    Load Capacity: HMMWV (2x), MRZR4 (1x (?)), Seats 63 PAX
+
+    Crew Requirements: 1x Pilot
+
+MQ-9 UAV
+
+    Callsign: AVENGER 9
+
+    Armaments / Loadout:
+
+        GBU-54 (4)
+
+        GBU-53 (16)
+
+        GBU-49 (4)
+
+        GBU-39-B/B (16)
+
+        GBU-38 (4)
+
+        GBU-12 (4)
+
+        Fuel Tanks 300 Gallons (4)
+
+        APKWS (M151) (28)
+
+        AGM-144R Hellfire II (8)
+
+        AGM-1449 Hellfire II (8) (Hinweis: so im Dokument geschrieben, evtl. ein Tippfehler für 114)
+
+        AGM-86B Nuclear ALCM (GPS) (4)
+
+        B61-4 Nuclear Bombs (4)
+
+    Features: Laser (Capable), IR (Capable)
