@@ -544,6 +544,9 @@
     // Standard-Profil aus den Einstellungen anwenden (beim Start)
     if (window.JTSettings && window.JTSettings.applyDefaultProfile) window.JTSettings.applyDefaultProfile();
 
+    // Update-Check: schaut still nach, ob es eine neue App-Version gibt
+    if (window.JTUpdate && window.JTUpdate.initAuto) window.JTUpdate.initAuto();
+
     window.addEventListener('hashchange', route);
     route();
     onProfileChange();

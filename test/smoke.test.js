@@ -251,10 +251,15 @@ setTimeout(() => {
   docsTab.click();
   check(doc.querySelectorAll('.doc-card').length === 4, 'Refs: 4 Dokumente-Karten');
 
-  // Einstellungen: Tabs + Channels + Daten
+  // Einstellungen: Tabs + Channels + Daten + Update
   window.location.hash = '#/settings';
   window.dispatchEvent(new window.HashChangeEvent('hashchange'));
-  check(doc.querySelectorAll('#settings-root .tab').length === 3, 'Einstellungen: 3 Tabs');
+  check(doc.querySelectorAll('#settings-root .tab').length === 4, 'Einstellungen: 4 Tabs');
+  // Update-Tab rendert die Update-Seite (ohne App-Backend → nur Hinweis + Button)
+  const upTab = [...doc.querySelectorAll('#settings-root .tab')].find(t => t.textContent.includes('Update'));
+  check(!!upTab, 'Einstellungen: Update-Tab vorhanden');
+  upTab.click();
+  check(!!doc.querySelector('#update-check-btn'), 'Update-Seite: Prüfen-Button da');
   const chTab = [...doc.querySelectorAll('#settings-root .tab')].find(t => t.textContent.includes('Channels'));
   chTab.click();
   check(!!doc.querySelector('#settings-root .data-table'), 'Einstellungen: Channel-Tabelle');

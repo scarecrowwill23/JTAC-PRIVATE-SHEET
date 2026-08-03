@@ -67,14 +67,35 @@ Testet Rechenlogik, UI (jsdom), Satz-Output und den kompletten Workflow inkl. Mi
 npm install
 npm run pack:win
 ```
-Ergebnis im Ordner `build/JTAC-Helper-win32-x64/` – die `JTAC-Helper.exe` starten, fertig.
+Ergebnis im Ordner `build/JTAC-Private-Sheet-win32-x64/` – die `JTAC-Private-Sheet.exe` starten, fertig.
 Die App braucht danach kein Internet mehr. Alle Daten liegen lokal im App-Profil-Ordner.
+
+## 🔄 App aktualisieren (ganz einfach – kann jeder)
+
+**Du musst nicht selbst nachgucken:** Die App prüft beim Start automatisch, ob es eine neue
+Version gibt. Wenn ja, erscheint auf der Startseite ein **großes oranges Schild** mit einer
+Anleitung (auch unter ⚙ Einstellungen → 🔄 Update).
+
+**Dann nur noch das hier:**
+
+1. **App zumachen.**
+2. **Doppelklick auf `UPDATE.bat`** (Windows) bzw. `./update.sh` (Mac/Linux) im App-Ordner.
+   Ein Fenster geht auf und macht **alles von allein**.
+3. **Warten, bis „FERTIG!" da steht** – App wieder starten. Fertig. 🎉
+
+> 😌 **Keine Angst um deine Daten:** Missionen, Profile, Checklisten und Einstellungen
+> bleiben beim Update erhalten – sie liegen getrennt von der App in deinem Benutzer-Profil.
+>
+> Plan B (wenn's klemmt): Auf der GitHub-Seite → grüner Knopf **„Code"** → **„Download ZIP"**
+> → auspacken → damit den alten App-Ordner ersetzen.
 
 ## Projektstruktur
 
 ```
-main.js              – Electron-Fenster (Main-Prozess)
-preload.js           – sichere Brücke (Clipboard, Titel)
+main.js              – Electron-Fenster (Main-Prozess) + Update-Check
+preload.js           – sichere Brücke (Clipboard, Titel, Update)
+UPDATE.bat           – Doppelklick = automatisches Update (Windows)
+update.sh            – dasselbe für Mac/Linux
 src/
   index.html         – Oberfläche
   css/styles.css     – Design (dunkel/hell)
