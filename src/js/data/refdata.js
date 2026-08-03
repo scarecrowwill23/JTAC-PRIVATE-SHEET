@@ -638,6 +638,16 @@ const REF = {
   bdaResults: ['Destroyed', 'Immobilized', 'Damaged', 'No effect', 'Partial (50%)'],
 
   // ============================================================
+  // MISSIONSTYPEN (OP / Side OP / Training)
+  // ============================================================
+  missionTypes: [
+    { id: 'main',     label: 'Hauptmission (OP)',      badge: 'OP',       color: 'var(--accent)' },
+    { id: 'side',     label: 'Nebenmission (Side OP)', badge: 'SIDE OP',   color: 'var(--accent-2)' },
+    { id: 'training', label: 'Training',               badge: 'TRAINING',  color: '#5b8db8' }
+  ],
+  campaignSlots: { ops: 6, training: 4 },  // 6 Wochen OP + 4 Wochen Training
+
+  // ============================================================
   // CHANNELS (ACRE-2) – Short Range & Long Range
   // ============================================================
   defaultChannels: [

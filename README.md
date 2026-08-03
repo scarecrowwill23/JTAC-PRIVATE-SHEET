@@ -14,7 +14,7 @@ keine Anmeldung, kein Server, keine Datenübertragung.
 | Modul | Was es kann |
 |---|---|
 | **Start (Dashboard)** | Einsatz-Zentrale: aktive Mission, dein CAS-Airframe mit Bewaffnung, große Schnellzugriff-Buttons (Fokus: 5-Line & HLZ, Briefing Area) |
-| **📋 Mission** | Jede Mission extra anlegen (Name + Karte + **Campaign**). Sie sammelt: **Funkspruch-Log**, **BDA-History mit Schnellbewertungen** (Destroyed / Immobilized / X/10), **Koordinaten-Favoriten**, **Pre-Mission-Checkliste**, **„Ich bin hier"**. **Campaign-Report** (6 Missionen): alle Funksprüche + BDA als Text. Export/Import als JSON. |
+| **📋 Mission** | Jede Mission extra anlegen (Name + Karte + **Campaign** + **Typ**). Typen: **OP** (Hauptmission) · **Side OP** (Nebenmission – zählt zur Campaign, aber separat) · **Training** (eigener 4er-Cycle). Sie sammelt: **Funkspruch-Log**, **BDA-History mit Schnellbewertungen** (Destroyed / Immobilized / X/10), **Koordinaten-Favoriten**, **Pre-Mission-Checkliste**, **„Ich bin hier"**. **Campaign-Fortschritt** (6 OP-Plätze + 4 Training-Plätze als Balken) + **Campaign-Report** (alle Funksprüche + BDA als Text). Export/Import als JSON. |
 | **Start (Mission-first)** | Beim Öffnen steht die **Mission groß im Mittelpunkt** (anlegen oder Details), **History rechts daneben** – dann die Schnellzugriffe. |
 | **🚁 5-Line CAS (Rotary)** | Dein Standard-Brief. Felder: Game Plan (Type/MOA/Anzahl/Ordnance), Friendly, Target Grid, Beschreibung/Mark, Remarks (LTL/FAH/Danger Close). |
 | **🛬 HLZ Brief** | Landeplatz-Briefing: Grid, Markierung, Hindernisse, Friendly/Enemy SITREP, Security (Green/Yellow/Red). |

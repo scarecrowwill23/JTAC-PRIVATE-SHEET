@@ -86,6 +86,10 @@
               <label class="field-label">Campaign (optional)</label>
               <input id="home-new-campaign" class="input" placeholder="z. B. Iron Wrath" list="home-campaign-list">
             </div>
+            <div class="field">
+              <label class="field-label">Typ</label>
+              <select id="home-new-type" class="select"></select>
+            </div>
           </div>
           <div class="field-row">
             <button id="home-start" class="btn btn-primary big">🚀 Mission starten</button>
@@ -100,6 +104,13 @@
       });
       mapSel.value = setMap;
 
+      const typeSel = document.getElementById('home-new-type');
+      window.REF.missionTypes.forEach(t => {
+        const o = document.createElement('option');
+        o.value = t.id; o.textContent = t.label;
+        typeSel.appendChild(o);
+      });
+
       const dl = document.createElement('datalist');
       dl.id = 'home-campaign-list';
       window.JTMissions.getCampaigns().forEach(c => {
@@ -111,7 +122,8 @@
         const name = document.getElementById('home-new-name').value.trim();
         const map = document.getElementById('home-new-map').value;
         const campaign = document.getElementById('home-new-campaign').value.trim();
-        window.JTMissions.create(name, map, campaign);
+        const type = document.getElementById('home-new-type').value;
+        window.JTMissions.create(name, map, campaign, type);
         App.toast('Mission gestartet: ' + window.JTMissions.getActive().name);
         onMissionChange();
         location.hash = '#/mission';
@@ -119,10 +131,11 @@
       return;
     }
 
-    // Aktive Mission groß anzeigen
+    // Aktive Mission groß anzeigen (mit Typ-Badge)
+    const tInfo = window.JTMissions.typeInfo ? window.JTMissions.typeInfo(m.type) : window.REF.missionTypes[0];
     mbox.innerHTML = `
       <div class="dash-mission-big">
-        <div class="dash-mission-title">${m.name}${m.campaign ? '  <span class="chip">' + m.campaign + '</span>' : ''}</div>
+        <div class="dash-mission-title">${m.name} <span class="mission-badge" style="background:${tInfo.color}">${tInfo.badge}</span>${m.campaign ? '  <span class="chip">' + m.campaign + '</span>' : ''}</div>
         <div class="dash-mission-grid">
           <div class="kv"><span>Karte</span><b>${window.JTProfiles.mapName(m.map)}</b></div>
           <div class="kv"><span>Funksprüche</span><b>${m.scripts.length}</b></div>
@@ -161,7 +174,8 @@
     recent.forEach(m => {
       const row = document.createElement('button');
       row.className = 'history-row';
-      row.innerHTML = `<b>${m.name}</b><span>${new Date(m.createdAt).toLocaleDateString('de-DE')} · ${m.scripts.length} Spruch · ${m.bda.length} BDA${m.campaign ? ' · ' + m.campaign : ''}</span>`;
+      const tInfo = window.JTMissions.typeInfo(m.type);
+      row.innerHTML = `<b>${m.name} <span class="mission-badge" style="background:${tInfo.color}">${tInfo.badge}</span></b><span>${new Date(m.createdAt).toLocaleDateString('de-DE')} · ${m.scripts.length} Spruch · ${m.bda.length} BDA${m.campaign ? ' · ' + m.campaign : ''}</span>`;
       row.addEventListener('click', () => {
         window.JTMissions.setActive(m.id);
         onMissionChange();

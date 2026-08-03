@@ -15,10 +15,20 @@
   let activeId = localStorage.getItem(ACTIVE) || null;
 
   function load() {
-    try { return JSON.parse(localStorage.getItem(KEY)) || []; }
+    try {
+      const arr = JSON.parse(localStorage.getItem(KEY)) || [];
+      // Migration: ältere Missionen ohne Typ → 'main'
+      arr.forEach(m => { if (!m.type) m.type = 'main'; });
+      return arr;
+    }
     catch (e) { return []; }
   }
   function save() { localStorage.setItem(KEY, JSON.stringify(missions)); }
+
+  /** Typ-Info einer Mission (Label, Badge, Farbe). */
+  function typeInfo(type) {
+    return window.REF.missionTypes.find(t => t.id === type) || window.REF.missionTypes[0];
+  }
 
   function uid() { return 'm' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
 
@@ -26,12 +36,13 @@
   function getMissions() { return missions; }
   function getActive() { return missions.find(m => m.id === activeId) || null; }
 
-  function create(name, map, campaign) {
+  function create(name, map, campaign, type) {
     const m = {
       id: uid(),
       name: name || ('Mission ' + (missions.length + 1)),
       map: map || 'altis',
       campaign: campaign || '',
+      type: type || 'main',
       createdAt: Date.now(),
       scripts: [],
       bda: [],
@@ -67,10 +78,15 @@
     if (!list.length) return null;
     const out = [];
     out.push('=== CAMPAIGN REPORT: ' + campaign + ' ===');
-    out.push('Missionen: ' + list.length + ' / 6 · Erstellt: ' + new Date(list[0].createdAt).toLocaleDateString('de-DE'));
+    const mainC = list.filter(m => m.type === 'main').length;
+    const sideC = list.filter(m => m.type === 'side').length;
+    const trC = list.filter(m => m.type === 'training').length;
+    out.push('Missionen: ' + list.length + ' (OPs: ' + mainC + '/6 · Side Ops: ' + sideC + ' · Training: ' + trC + '/4)');
+    out.push('Erstellt: ' + new Date(list[0].createdAt).toLocaleDateString('de-DE'));
     list.forEach((m, i) => {
+      const tInfo = typeInfo(m.type);
       out.push('');
-      out.push('--- Mission ' + (i + 1) + ': ' + m.name + ' (' + window.JTProfiles.mapName(m.map) + ') ---');
+      out.push('--- Mission ' + (i + 1) + ' [' + tInfo.badge + ']: ' + m.name + ' (' + window.JTProfiles.mapName(m.map) + ') ---');
       out.push('Funksprüche:');
       if (!m.scripts.length) out.push('  (keine)');
       m.scripts.forEach(s => out.push('  [' + fmtTime(s.ts) + '] ' + s.type + ': ' + s.text.replace(/\n/g, ' | ')));
@@ -84,6 +100,11 @@
   }
 
   function setActive(id) {
+    if (id === null || id === '') {
+      activeId = null;
+      localStorage.setItem(ACTIVE, '');
+      return;
+    }
     if (missions.find(m => m.id === id)) {
       activeId = id;
       localStorage.setItem(ACTIVE, id);
@@ -249,10 +270,25 @@
     const i3 = document.createElement('input');
     i3.className = 'input';
     i3.id = 'mission-new-campaign';
-    i3.placeholder = 'z. B. Op. Iron Wrath (6 Missionen)';
+    i3.placeholder = 'z. B. Op. Iron Wrath';
     i3.setAttribute('list', 'campaign-list');
     f3.appendChild(l3); f3.appendChild(i3);
-    row1.appendChild(f1); row1.appendChild(f2); row1.appendChild(f3);
+    const f4 = document.createElement('div');
+    f4.className = 'field';
+    const l4 = document.createElement('label');
+    l4.className = 'field-label';
+    l4.textContent = 'Typ';
+    const s4 = document.createElement('select');
+    s4.className = 'select';
+    s4.id = 'mission-new-type';
+    window.REF.missionTypes.forEach(t => {
+      const o = document.createElement('option');
+      o.value = t.id;
+      o.textContent = t.label;
+      s4.appendChild(o);
+    });
+    f4.appendChild(l4); f4.appendChild(s4);
+    row1.appendChild(f1); row1.appendChild(f2); row1.appendChild(f3); row1.appendChild(f4);
     form.appendChild(row1);
 
     // Campaign-Datalist (bestehende Campaigns)
@@ -272,7 +308,8 @@
       const name = document.getElementById('mission-new-name').value.trim();
       const map = document.getElementById('mission-new-map').value;
       const campaign = document.getElementById('mission-new-campaign').value.trim();
-      create(name, map, campaign);
+      const type = document.getElementById('mission-new-type').value;
+      create(name, map, campaign, type);
       render();
       if (window.App && window.App.onMissionChange) window.App.onMissionChange();
     });
@@ -292,7 +329,8 @@
         const card = document.createElement('div');
         card.className = 'profile-card';
         const hh = document.createElement('h3');
-        hh.textContent = m.name + (m.campaign ? '  [' + m.campaign + ']' : '');
+        const tInfo = typeInfo(m.type);
+        hh.innerHTML = m.name + ' <span class="mission-badge" style="background:' + tInfo.color + '">' + tInfo.badge + '</span>';
         card.appendChild(hh);
         const kv = document.createElement('div');
         kv.className = 'kv';
@@ -342,12 +380,81 @@
         const list = getByCampaign(camp);
         const head = document.createElement('div');
         head.className = 'campaign-head';
+        const titleBox = document.createElement('div');
         const title = document.createElement('h3');
-        title.textContent = '📦 Campaign: ' + camp + '  (' + list.length + '/6 Missionen)';
-        head.appendChild(title);
+        title.textContent = '📦 Campaign: ' + camp;
+        titleBox.appendChild(title);
+        head.appendChild(titleBox);
+
+        // Fortschritts-Plätze: 6 OPs + Side Ops + 4 Training
+        const progress = document.createElement('div');
+        progress.className = 'campaign-progress';
+        const mainCount = list.filter(m => m.type === 'main').length;
+        const sideCount = list.filter(m => m.type === 'side').length;
+        const trainCount = list.filter(m => m.type === 'training').length;
+        const slots = window.REF.campaignSlots;
+
+        const opRow = document.createElement('div');
+        opRow.className = 'progress-row';
+        const opLabel = document.createElement('span');
+        opLabel.className = 'progress-label';
+        opLabel.textContent = 'OPs';
+        opRow.appendChild(opLabel);
+        for (let i = 0; i < slots.ops; i++) {
+          const dot = document.createElement('span');
+          dot.className = 'progress-dot' + (i < mainCount ? ' filled' : '');
+          dot.title = 'OP ' + (i + 1);
+          opRow.appendChild(dot);
+        }
+        const opCount = document.createElement('span');
+        opCount.className = 'progress-count';
+        opCount.textContent = mainCount + '/' + slots.ops;
+        opRow.appendChild(opCount);
+        progress.appendChild(opRow);
+
+        // Side Ops (zählen zur Campaign, aber nicht in die Hauptzahl)
+        if (sideCount > 0) {
+          const sideRow = document.createElement('div');
+          sideRow.className = 'progress-row';
+          const sideLabel = document.createElement('span');
+          sideLabel.className = 'progress-label';
+          sideLabel.textContent = 'Side Ops';
+          sideRow.appendChild(sideLabel);
+          for (let i = 0; i < sideCount; i++) {
+            const dot = document.createElement('span');
+            dot.className = 'progress-dot side filled';
+            dot.title = 'Side OP ' + (i + 1);
+            sideRow.appendChild(dot);
+          }
+          const sideCountEl = document.createElement('span');
+          sideCountEl.className = 'progress-count';
+          sideCountEl.textContent = sideCount;
+          sideRow.appendChild(sideCountEl);
+          progress.appendChild(sideRow);
+        }
+
+        const trRow = document.createElement('div');
+        trRow.className = 'progress-row';
+        const trLabel = document.createElement('span');
+        trLabel.className = 'progress-label';
+        trLabel.textContent = 'Training';
+        trRow.appendChild(trLabel);
+        for (let i = 0; i < slots.training; i++) {
+          const dot = document.createElement('span');
+          dot.className = 'progress-dot train' + (i < trainCount ? ' filled' : '');
+          dot.title = 'Training ' + (i + 1);
+          trRow.appendChild(dot);
+        }
+        const trCount = document.createElement('span');
+        trCount.className = 'progress-count';
+        trCount.textContent = trainCount + '/' + slots.training;
+        trRow.appendChild(trCount);
+        progress.appendChild(trRow);
+        head.appendChild(progress);
+
         const reportBtn = document.createElement('button');
         reportBtn.className = 'btn';
-        reportBtn.textContent = '📄 Campaign-Report';
+        reportBtn.textContent = '📄 Report';
         reportBtn.title = 'Alle Funksprüche & BDA dieser Campaign als Text';
         reportBtn.addEventListener('click', () => {
           const report = campaignReport(camp);
@@ -372,7 +479,8 @@
     head.className = 'view-head';
     const hdiv = document.createElement('div');
     const h = document.createElement('h1');
-    h.textContent = '📋 ' + m.name;
+    const tInfo = typeInfo(m.type);
+    h.innerHTML = '📋 ' + m.name + ' <span class="mission-badge" style="background:' + tInfo.color + '">' + tInfo.badge + '</span>';
     hdiv.appendChild(h);
     const lead = document.createElement('p');
     lead.className = 'lead';
@@ -772,7 +880,7 @@
   window.JTMissions = {
     getMissions, getActive, create, setActive, remove, update,
     addScript, addBDA, addFav, removeFav, setCheck, getCheck, setMyPos,
-    getCampaigns, getByCampaign, campaignReport,
+    getCampaigns, getByCampaign, campaignReport, typeInfo,
     exportActive, importJSON, render
   };
 })();

@@ -862,6 +862,59 @@ select.select option { background: var(--panel); }
 .campaign-head h3 { margin: 0; font-size: 15px; }
 
 /* ============================================================
+   Mission-Typ-Badges & Campaign-Fortschritt
+   ============================================================ */
+.mission-badge {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #0c110c;
+  border-radius: 4px;
+  padding: 2px 7px;
+  vertical-align: middle;
+  margin-left: 4px;
+}
+.history-row .mission-badge { margin-left: 6px; }
+.dash-mission-title .mission-badge { font-size: 11px; }
+
+.campaign-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 4px 8px;
+  flex: 1 1 auto;
+}
+.progress-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.progress-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .6px;
+  color: var(--text-dim);
+  min-width: 72px;
+}
+.progress-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--panel-2);
+  border: 1px solid var(--border-strong);
+}
+.progress-dot.filled { background: var(--accent); border-color: var(--accent); }
+.progress-dot.side.filled { background: var(--accent-2); border-color: var(--accent-2); }
+.progress-dot.train.filled { background: #5b8db8; border-color: #5b8db8; }
+.progress-count {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-left: 4px;
+}
+
+/* ============================================================
    Toast
    ============================================================ */
 .toast {

@@ -77,16 +77,22 @@ setTimeout(() => {
   check(!!doc.getElementById('home-new-name'), 'Startseite: Mission-anlegen-Formular groß (Mission first)');
   check(!!doc.getElementById('dash-history-box'), 'Startseite: History-Panel vorhanden');
 
-  // Mission: anlegen (mit Campaign)
+  // Mission: anlegen (mit Campaign + Typ)
   window.location.hash = '#/mission';
   window.dispatchEvent(new window.HashChangeEvent('hashchange'));
   doc.getElementById('mission-new-name').value = 'Op. Test';
   doc.getElementById('mission-new-campaign').value = 'Iron Wrath';
+  const typeSel = doc.getElementById('mission-new-type');
+  check(!!typeSel && typeSel.options.length === 3, 'Mission: Typ-Auswahl (OP/Side/Training)');
+  typeSel.value = 'side';
+  typeSel.dispatchEvent(new window.Event('change', { bubbles: true }));
   doc.querySelector('#mission-root .btn-primary').click();
   check(!!window.JTMissions.getActive(), 'Mission erstellt');
   check(window.JTMissions.getActive().name === 'Op. Test', 'Mission heißt Op. Test');
   check(window.JTMissions.getActive().campaign === 'Iron Wrath', 'Mission: Campaign gespeichert');
+  check(window.JTMissions.getActive().type === 'side', 'Mission: Typ = side');
   check(doc.getElementById('mission-root').textContent.includes('Op. Test'), 'Mission-Ansicht zeigt Namen');
+  check(doc.getElementById('mission-root').textContent.includes('SIDE OP'), 'Mission-Ansicht zeigt Typ-Badge');
   // Funkspruch-Log
   window.JTMissions.addScript('5-Line', 'Test funkspruch');
   check(window.JTMissions.getActive().scripts.length === 1, 'Funkspruch im Log');
@@ -104,6 +110,20 @@ setTimeout(() => {
   const report = window.JTMissions.campaignReport('Iron Wrath');
   check(!!report && report.includes('CAMPAIGN REPORT') && report.includes('Op. Test'), 'Campaign-Report erzeugt');
   check(report.includes('BTR-42A'), 'Campaign-Report enthält BDA');
+  check(report.includes('SIDE OP'), 'Campaign-Report enthält Typ');
+
+  // Campaign-Fortschritt (Listen-Ansicht ohne aktive Mission)
+  const firstMissionId = window.JTMissions.getMissions()[0].id;
+  window.JTMissions.setActive(null);
+  window.JTMissions.render();
+  check(doc.querySelectorAll('.campaign-head').length >= 1, 'Campaign-Gruppe angezeigt');
+  const opDots = doc.querySelectorAll('.progress-dot');
+  check(opDots.length >= 6, 'Fortschritts-Plätze (OPs) angezeigt');
+  check(doc.querySelectorAll('.progress-dot.train').length >= 4, 'Training-Plätze (4) angezeigt');
+  check(doc.querySelectorAll('.progress-dot.side').length >= 1, 'Side-OP-Plätze angezeigt');
+  // wieder aktivieren für weitere Tests
+  window.JTMissions.setActive(firstMissionId);
+  window.JTMissions.render();
 
   // Channels
   check(window.JTChannels.getChannels().length >= 4, 'Channels geladen (' + window.JTChannels.getChannels().length + ')');
