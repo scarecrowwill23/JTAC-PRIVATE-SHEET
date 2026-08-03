@@ -8,7 +8,7 @@
   "private": true,
   "scripts": {
     "start": "electron .",
-    "test": "node test/logic.test.js && node test/smoke.test.js",
+    "test": "node test/logic.test.js && node test/smoke.test.js && node test/flow.test.js",
     "pack:win": "electron-packager . \"JTAC-Private-Sheet\" --platform=win32 --arch=x64 --out=build --overwrite --prune=true --ignore=\"^/build\" --ignore=\"^/test\" --app-version=0.1.0"
   },
   "devDependencies": {

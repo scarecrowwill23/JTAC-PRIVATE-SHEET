@@ -1,6 +1,6 @@
 // ============================================================
 // JTAC Private Sheet – App-Steuerung
-// Router, Theme, Toast, Kopieren, Formular-Wiring.
+// Router, Theme, Toast, Kopieren, Modul-Verdrahtung.
 // ============================================================
 
 (function () {
@@ -48,7 +48,7 @@
   }
 
   // ---------- Router ----------
-  const routes = ['home', 'cas', 'medevac', 'grid', 'timer', 'profile', 'refs'];
+  const routes = ['home', 'casflow', 'briefs', 'grid', 'timer', 'profile', 'refs'];
 
   function route() {
     const hash = (location.hash || '#/home').replace('#/', '');
@@ -60,6 +60,7 @@
       a.classList.toggle('active', a.dataset.route === name);
     });
     if (name === 'refs') window.JTRefs.render();
+    if (name === 'casflow') window.JTCasFlow.renderStep();
     if (name === 'profile') {
       window.JTProfiles.renderCards('profile-list');
       window.JTProfiles.renderEditForm();
@@ -74,130 +75,6 @@
     });
   }
 
-  // ---------- 9-Line CAS ----------
-  let casForm = null, medevacForm = null;
-
-  function initCAS() {
-    const load = () => {
-      try {
-        const stored = JSON.parse(localStorage.getItem(window.JTForms.LS.cas) || '{}');
-        const p = window.JTProfiles.getActive();
-        // Profil-Werte als Default, falls Feld leer
-        const merged = { ...stored };
-        if (!merged.grid && p.laser) merged.grid = '';
-        return merged;
-      } catch (e) { return {}; }
-    };
-    const save = (v) => localStorage.setItem(window.JTForms.LS.cas, JSON.stringify(v));
-
-    const fieldOpts = {
-      mark: { list: 'cas-mark-list' },
-      grid: { list: 'cas-grid-list' }
-    };
-
-    casForm = window.JTForms.initForm('cas-form', window.REF.casLines, {
-      load, save,
-      fieldOpts,
-      onChange: renderCASPreview
-    });
-
-    // Datalists
-    const dl = document.createElement('datalist');
-    dl.id = 'cas-mark-list';
-    const marks = [];
-    window.REF.laserCodes.forEach(c => marks.push('Lase ' + c));
-    window.REF.smokeColors.forEach(c => marks.push(c + ' Rauch'));
-    marks.push('IR-Strobe', 'VS-17 Panel', 'GPS-Koordinaten', 'In die Offene legen');
-    marks.forEach(m => { const o = document.createElement('option'); o.value = m; dl.appendChild(o); });
-    document.body.appendChild(dl);
-
-    const dl2 = document.createElement('datalist');
-    dl2.id = 'cas-grid-list';
-    window.REF.maps.filter(m => m.id !== 'custom').forEach(m => {
-      const o = document.createElement('option');
-      o.value = 'Grid: ' + m.zone + ' (siehe Grid-Rechner)';
-      dl2.appendChild(o);
-    });
-    document.body.appendChild(dl2);
-  }
-
-  function renderCASPreview() {
-    const values = casForm.getValues();
-    const p = window.JTProfiles.getActive();
-    const header = `${p.jtac || 'JTAC'} – 9-Line CAS, ready to copy.`;
-    const text = window.JTForms.buildPreview(window.REF.casLines, values, { header });
-    setPreview('cas-preview', text);
-    const req = {};
-    window.REF.casLines.forEach(l => req[l.line] = l.key);
-    window.JTForms.updateBadges(document.getElementById('cas-form'), values, req);
-  }
-
-  // ---------- 9-Line MEDEVAC ----------
-  function initMEDEVAC() {
-    const load = () => {
-      try {
-        const stored = JSON.parse(localStorage.getItem(window.JTForms.LS.medevac) || '{}');
-        const p = window.JTProfiles.getActive();
-        // Frequenz/Callsign aus dem Profil vorbelegen, falls leer
-        const merged = { ...stored };
-        if (!merged.freq && p.freqMed) {
-          merged.freq = p.freqMed + (p.med ? ' / ' + p.med : '');
-        }
-        return merged;
-      } catch (e) { return {}; }
-    };
-    const save = (v) => localStorage.setItem(window.JTForms.LS.medevac, JSON.stringify(v));
-
-    const fieldOpts = {
-      loc: { list: 'med-grid-list' },
-      security: { selectOptions: ['N – kein Feind', 'P – möglich', 'E – Feind', 'X – bewaffnete Eskorte'] },
-      equip: { selectOptions: ['A – keine', 'B – Seilwinde', 'C – Extraktion', 'D – Beatmung'] },
-      nbc: { selectOptions: ['keine', 'NBC 1', 'NBC 2', 'NBC 3'] }
-    };
-    const special = {
-      patients: (ld, value) => window.JTForms.buildLineRow(ld, value, {
-        numberInputs: [
-          { code: 'A', label: 'A – urgent' },
-          { code: 'B', label: 'B – urgent-surgical' },
-          { code: 'C', label: 'C – priority' },
-          { code: 'D', label: 'D – routine' },
-          { code: 'E', label: 'E – convenience' }
-        ]
-      }),
-      type: (ld, value) => window.JTForms.buildLineRow(ld, value, {
-        numberInputs: [
-          { code: 'L', label: 'L – liegend (Litter)' },
-          { code: 'A', label: 'A – gehend (Ambulatory)' }
-        ]
-      })
-    };
-
-    medevacForm = window.JTForms.initForm('medevac-form', window.REF.medevacLines, {
-      load, save, fieldOpts, special,
-      onChange: renderMEDEVACPreview
-    });
-  }
-
-  function renderMEDEVACPreview() {
-    const values = medevacForm.getValues();
-    const p = window.JTProfiles.getActive();
-    const freq = values.freq || (p.freqMed ? p.freqMed + ' / ' + p.med : '');
-    const header = `${p.med || 'MEDEVAC'} – 9-Line, über.`;
-    const text = window.JTForms.buildPreview(window.REF.medevacLines, values, { header });
-    setPreview('medevac-preview', text);
-    const req = {};
-    window.REF.medevacLines.forEach(l => req[l.line] = l.key);
-    window.JTForms.updateBadges(document.getElementById('medevac-form'), values, req);
-  }
-
-  function setPreview(id, text) {
-    const pre = document.getElementById(id);
-    if (!pre) return;
-    pre.textContent = text || pre.dataset.blank || '';
-    pre.dataset.plain = text || '';
-    pre.classList.toggle('blank', !text);
-  }
-
   // ---------- Grid-Rechner ----------
   function initGrid() {
     const zoneSel = document.getElementById('grid-zone');
@@ -210,13 +87,11 @@
     zoneSel.value = window.JTProfiles.getActive().map || 'altis';
 
     const fmtSel = document.getElementById('grid-format');
-    const fmtNum = () => parseInt(fmtSel.value, 10);
     const preset = () => window.REF.maps.find(m => m.id === zoneSel.value) || window.REF.maps[0];
 
     const run = () => {
       const a = document.getElementById('grid-a').value;
       const b = document.getElementById('grid-b').value;
-      const res = document.getElementById('grid-result');
       const set = (id, val, cls) => {
         const el = document.getElementById(id);
         if (el) { el.textContent = val; el.className = cls || ''; }
@@ -252,7 +127,6 @@
       run();
     });
 
-    // Einzelpunkt
     const runSingle = () => {
       const text = document.getElementById('grid-single').value;
       const set = (id, val, cls) => {
@@ -323,51 +197,50 @@
   }
 
   function onProfileChange() {
-    // Profile-Auswahl & Karten-Zone synchron
     const sel = document.getElementById('profile-select');
     if (sel) sel.value = window.JTProfiles.getActive().id;
     const zoneSel = document.getElementById('grid-zone');
     if (zoneSel) zoneSel.value = window.JTProfiles.getActive().map || 'altis';
-    if (casForm) renderCASPreview();
-    if (medevacForm) renderMEDEVACPreview();
+    if (window.JTBriefs && window.JTBriefs.onProfileChange) window.JTBriefs.onProfileChange();
+    if (window.JTCasFlow) window.JTCasFlow.renderPreview();
     if (window.jtacAPI && window.jtacAPI.setTitle) {
       window.jtacAPI.setTitle('JTAC Private Sheet – ' + window.JTProfiles.getActive().name);
     }
   }
-
-  // Profil-Wechsel (z. B. aus Karten-Klick) → alles aktualisieren
   App.onProfileChange = onProfileChange;
 
   // ---------- Start ----------
   window.App = App;
   window.addEventListener('DOMContentLoaded', () => {
     initTheme();
-    initCAS();
-    initMEDEVAC();
     initGrid();
     initProfilesUI();
     window.JTTimer.init();
+    window.JTBriefs.init();
+    window.JTCasFlow.init();
     window.JTProfiles.renderCards('profile-list');
 
     document.getElementById('copy-all-btn').addEventListener('click', () => {
       const hash = (location.hash || '#/home').replace('#/', '');
-      if (hash === 'cas') renderCASPreview();
-      if (hash === 'medevac') renderMEDEVACPreview();
-      const map = { cas: 'cas-preview', medevac: 'medevac-preview' };
-      const pre = map[hash] && document.getElementById(map[hash]);
-      if (pre) App.copy(pre.dataset.plain || pre.textContent);
-      else App.toast('Kein Funkspruch in dieser Ansicht.', true);
+      if (hash === 'briefs') window.JTBriefs.copyCurrent();
+      else if (hash === 'casflow') {
+        const pre = document.getElementById('casflow-preview');
+        if (pre) App.copy(pre.dataset.plain || pre.textContent);
+        else App.toast('Kein Funkspruch in dieser Ansicht.', true);
+      } else {
+        App.toast('Kein Funkspruch in dieser Ansicht.', true);
+      }
     });
 
     window.addEventListener('hashchange', route);
     route();
     onProfileChange();
-    // Version im Header
     try {
       const sub = document.getElementById('brand-sub');
       if (sub && window.jtacAPI) {
-        const v = window.jtacAPI.version();
-        if (v && v !== '0.0.0') sub.textContent = 'CGF 160th SOAR · v' + v;
+        window.jtacAPI.version().then(v => {
+          if (v && v !== '0.0.0') sub.textContent = 'CGF 160th SOAR · v' + v;
+        });
       }
     } catch (e) {}
   });

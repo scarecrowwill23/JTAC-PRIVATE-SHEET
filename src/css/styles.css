@@ -353,6 +353,111 @@ select.select option { background: var(--panel); }
 .ref-card td:first-child { font-family: var(--mono); font-weight: 700; white-space: nowrap; }
 
 /* ============================================================
+   Tabs
+   ============================================================ */
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+.tab {
+  background: var(--panel);
+  border: 1px solid var(--border-strong);
+  color: var(--text-dim);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: .3px;
+  transition: all .12s;
+}
+.tab:hover { border-color: var(--accent); color: var(--text); }
+.tab.active { background: var(--accent); border-color: var(--accent); color: #0c110c; }
+
+/* ============================================================
+   Stepper (12 Schritte)
+   ============================================================ */
+.stepper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 18px;
+}
+.step {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--panel);
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--text-dim);
+  transition: all .12s;
+  user-select: none;
+}
+.step:hover { border-color: var(--border-strong); }
+.step.active { border-color: var(--accent); color: var(--accent); font-weight: 700; }
+.step.done { opacity: .65; }
+.step.done .step-n { background: var(--ok); color: #0c110c; }
+.step-n {
+  width: 20px; height: 20px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--panel-2);
+  border-radius: 50%;
+  font-family: var(--mono);
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--text-dim);
+}
+.step.active .step-n { background: var(--accent); color: #0c110c; }
+
+/* ============================================================
+   Readback-Kennzeichnung
+   ============================================================ */
+.field-row.rb .line-badge,
+.line-badge.rb {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: #fff;
+}
+.field-row.rb .field-label {
+  color: var(--danger);
+}
+.line-badge.done { background: var(--accent); color: #0c110c; border-color: var(--accent); }
+
+/* ============================================================
+   Zahlengruppen (z. B. Patienten)
+   ============================================================ */
+.numgroup { display: flex; flex-wrap: wrap; gap: 8px; }
+.numwrap {
+  display: flex; align-items: center;
+  background: var(--bg-soft);
+  border: 1px solid var(--border-strong);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.numlab {
+  padding: 6px 8px;
+  font-family: var(--mono);
+  font-weight: 800;
+  font-size: 13px;
+  color: var(--accent);
+  background: var(--panel-2);
+  border-right: 1px solid var(--border-strong);
+}
+.numwrap .input.num {
+  width: 52px;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  text-align: center;
+}
+
+/* ============================================================
    Toast
    ============================================================ */
 .toast {

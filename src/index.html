@@ -14,7 +14,7 @@
       <span class="brand-mark">JT</span>
       <div class="brand-text">
         <span class="brand-title">JTAC&nbsp;PRIVATE&nbsp;SHEET</span>
-        <span class="brand-sub" id="brand-sub">CGF 160th SOAR · v0.1</span>
+        <span class="brand-sub" id="brand-sub">CGF 160th SOAR · v0.2</span>
       </div>
     </div>
 
@@ -34,8 +34,8 @@
     <nav class="sidebar" id="sidebar">
       <div class="nav-group">
         <a href="#/home"      class="nav-item" data-route="home"><span class="nav-ico">▦</span><span>Start</span></a>
-        <a href="#/cas"       class="nav-item" data-route="cas"><span class="nav-ico">🎯</span><span>9-Line&nbsp;CAS</span></a>
-        <a href="#/medevac"   class="nav-item" data-route="medevac"><span class="nav-ico">✚</span><span>9-Line&nbsp;MEDEVAC</span></a>
+        <a href="#/casflow"   class="nav-item" data-route="casflow"><span class="nav-ico">➤</span><span>12-Schritte&nbsp;CAS</span></a>
+        <a href="#/briefs"    class="nav-item" data-route="briefs"><span class="nav-ico">🎯</span><span>Briefs&nbsp;&amp;&nbsp;Formulare</span></a>
         <a href="#/grid"      class="nav-item" data-route="grid"><span class="nav-ico">⌖</span><span>Grid-Rechner</span></a>
         <a href="#/timer"     class="nav-item" data-route="timer"><span class="nav-ico">⏱</span><span>Timer&nbsp;/&nbsp;TOT</span></a>
         <a href="#/profile"   class="nav-item" data-route="profile"><span class="nav-ico">☎</span><span>Profile&nbsp;/&nbsp;Netze</span></a>
@@ -53,94 +53,104 @@
       <!-- ===== START ===== -->
       <section class="view" id="view-home">
         <h1>Start</h1>
-        <p class="lead">Dein JTAC-Büro für Arma&nbsp;3. Alles läuft lokal auf diesem Laptop – kein Server, kein Internet nötig.</p>
+        <p class="lead">Dein JTAC-Büro für Arma&nbsp;3 – basierend auf den Dokumenten deiner Unit (CGF 160th SOAR, 24th STS, ATG, TFW 18E). Alles läuft lokal, kein Internet nötig.</p>
 
         <div class="card-grid">
-          <a class="card" href="#/cas">
-            <div class="card-ico">🎯</div>
-            <div class="card-title">9-Line CAS</div>
-            <div class="card-text">Close Air Support – Briefing in 9 Zeilen aufbauen, prüfen und kopieren.</div>
+          <a class="card" href="#/casflow">
+            <div class="card-ico">➤</div>
+            <div class="card-title">12-Schritte-CAS</div>
+            <div class="card-text">Der komplette geführte Ablauf: Check-in → SITREP → Game Plan → Brief → Angriff → BDA.</div>
           </a>
-          <a class="card" href="#/medevac">
-            <div class="card-ico">✚</div>
-            <div class="card-title">9-Line MEDEVAC</div>
-            <div class="card-text">Medevac-Briefing nach NATO-Standard inkl. Patienten-Prioritäten.</div>
+          <a class="card" href="#/briefs">
+            <div class="card-ico">🎯</div>
+            <div class="card-title">Briefs &amp; Formulare</div>
+            <div class="card-text">9-Line CAS, 5-Line, MEDEVAC, Gunship, CCA, HLZ/ALZ, Airdrop, Call for Fire – mit Pflicht-Readback-Kennzeichnung.</div>
           </a>
           <a class="card" href="#/grid">
             <div class="card-ico">⌖</div>
             <div class="card-title">Grid-Rechner</div>
-            <div class="card-text">MGRS ↔ Koordinaten, Distanz &amp; Peilung zwischen zwei Punkten.</div>
+            <div class="card-text">MGRS ↔ Lat/Long, Distanz &amp; Peilung in Grad + Mil, Arma-Grids.</div>
           </a>
           <a class="card" href="#/timer">
             <div class="card-ico">⏱</div>
             <div class="card-title">Timer / TOT</div>
-            <div class="card-text">Time-on-Target-Countdown mit Lase-Fenster und Alarm.</div>
+            <div class="card-text">Time-on-Target-Countdown mit Lase-Fenster T–30 bis T+30.</div>
           </a>
           <a class="card" href="#/profile">
             <div class="card-ico">☎</div>
             <div class="card-title">Profile &amp; Netze</div>
-            <div class="card-text">Feste Profile: Callsigns, Frequenzen, Laser-Codes, Karten-Voreinstellung.</div>
+            <div class="card-text">Callsigns, Frequenzen, Laser-Codes, Karten-Voreinstellung – bis zu 3 Profile.</div>
           </a>
           <a class="card" href="#/refs">
             <div class="card-ico">▤</div>
             <div class="card-title">Referenzen</div>
-            <div class="card-text">Abkürzungen, Brevity, Verfahren – dein digitales Cheatsheet.</div>
+            <div class="card-text">Brevity-Wörterbuch, Danger-Close-Tabelle, Airframes, Höhenblöcke, Funk, Verfahren.</div>
           </a>
         </div>
 
         <div class="panel">
           <h2>Kurz &amp; knapp</h2>
           <ul class="checklist">
-            <li><b>Profil wählen</b> (oben rechts) – Callsigns &amp; Frequenzen werden automatisch in die Formulare übernommen.</li>
-            <li><b>9-Line ausfüllen</b> – Live-Vorschau unten, per <b>⧉ Funkspruch kopieren</b> in die Zwischenablage.</li>
-            <li><b>Grid-Rechner</b> – MGRS von ACE oder Arma-Grid eingeben, Distanz &amp; Peilung berechnen.</li>
-            <li><b>Timer</b> – TOT setzen, Lase-Fenster startet automatisch 30&nbsp;s vor dem Zielzeitpunkt.</li>
+            <li><b>Profil wählen</b> (oben rechts) – Callsigns &amp; Frequenzen fließen automatisch in die Formulare.</li>
+            <li><b>12-Schritte-CAS</b> führt dich durch den kompletten Einsatzablauf – Schritt für Schritt.</li>
+            <li><b>Briefs</b>: Formular ausfüllen → Live-Funkspruch → <b>⧉ kopieren</b>.</li>
+            <li><b>Pflicht-Readbacks</b> sind in den Formularen rot markiert.</li>
+            <li><b>Referenzen</b>: Danger Close nachschlagen, Brevity durchsuchen, Airframes der 160th SOAR.</li>
           </ul>
         </div>
       </section>
 
-      <!-- ===== 9-LINE CAS ===== -->
-      <section class="view" id="view-cas">
+      <!-- ===== 12-SCHRITTE CAS ===== -->
+      <section class="view" id="view-casflow">
         <div class="view-head">
           <div>
-            <h1>9-Line CAS</h1>
-            <p class="lead">Close Air Support Briefing. Standard-NATO-Format – wird bei Erhalt deiner PDFs an deine Unit angepasst.</p>
+            <h1>12-Schritte-CAS</h1>
+            <p class="lead">Geführter Einsatzablauf nach ATG / Ghost / TFW 18E. Schritt für Schritt durch den CAS-Zyklus.</p>
           </div>
-          <button class="btn" data-copy-target="cas-preview">⧉ Kopieren</button>
+          <button id="casflow-copy" class="btn">⧉ Kopieren</button>
         </div>
+
+        <div class="stepper" id="casflow-stepper"></div>
 
         <div class="grid-2">
           <div class="panel">
-            <h2>Briefing</h2>
-            <div id="cas-form" class="form"></div>
+            <h2 id="casflow-title">Schritt</h2>
+            <p class="lead" id="casflow-body"></p>
+            <div id="casflow-form"></div>
+            <div class="field-row" style="margin-top:16px">
+              <button id="casflow-prev" class="btn">← Zurück</button>
+              <button id="casflow-next" class="btn btn-primary">Weiter →</button>
+            </div>
           </div>
           <div class="panel">
-            <h2>Funkspruch-Vorschau</h2>
-            <pre id="cas-preview" class="preview" data-blank="Zeilen erscheinen hier, sobald du sie ausfüllst."></pre>
-            <div class="hint" id="cas-hint"></div>
+            <h2>Laufender Funkspruch</h2>
+            <pre id="casflow-preview" class="preview" data-blank="Funkspruch erscheint hier, sobald du Angaben machst."></pre>
+            <div class="hint">Der Workflow sammelt Check-in, SITREP, Game Plan, Brief (9-/5-Line), Remarks und BDA zu einem durchgehenden Spruch.</div>
           </div>
         </div>
       </section>
 
-      <!-- ===== 9-LINE MEDEVAC ===== -->
-      <section class="view" id="view-medevac">
+      <!-- ===== BRIEFS ===== -->
+      <section class="view" id="view-briefs">
         <div class="view-head">
           <div>
-            <h1>9-Line MEDEVAC</h1>
-            <p class="lead">Medevac-Anforderung nach NATO-Standard (aktualisiert mit deinen PDFs).</p>
+            <h1>Briefs &amp; Formulare</h1>
+            <p class="lead">Alle Brief-Formate deiner Unit-Dokumente. Rot markierte Zeilen = Pflicht-Readback.</p>
           </div>
-          <button class="btn" data-copy-target="medevac-preview">⧉ Kopieren</button>
+          <button class="btn" data-copy-target="brief-preview">⧉ Kopieren</button>
         </div>
+
+        <div class="tabs" id="brief-tabs"></div>
 
         <div class="grid-2">
           <div class="panel">
-            <h2>Briefing</h2>
-            <div id="medevac-form" class="form"></div>
+            <h2 id="brief-form-title">Formular</h2>
+            <div id="brief-form" class="form"></div>
           </div>
           <div class="panel">
             <h2>Funkspruch-Vorschau</h2>
-            <pre id="medevac-preview" class="preview" data-blank="Zeilen erscheinen hier, sobald du sie ausfüllst."></pre>
-            <div class="hint" id="medevac-hint"></div>
+            <pre id="brief-preview" class="preview" data-blank="Zeilen erscheinen hier, sobald du sie ausfüllst."></pre>
+            <div class="hint" id="brief-hint"></div>
           </div>
         </div>
       </section>
@@ -202,7 +212,7 @@
               <div class="result-row"><span>UTM</span><b id="gs-utm">–</b></div>
             </div>
             <div class="hint">
-              <b>Tipp:</b> 6-stellige Arma-Grids (z.&nbsp;B. <code>123 456</code>) werden über die ausgewählte Karten-Voreinstellung einer Zone zugeordnet. MGRS mit kompletter Zone ist immer am genauesten.
+              <b>Tipp:</b> 6-stellige Arma-Grids (z.&nbsp;B. <code>123 456</code>) werden über die Karten-Voreinstellung einer Zone zugeordnet. MGRS mit kompletter Zone ist am genauesten.
             </div>
           </div>
         </div>
@@ -266,7 +276,7 @@
               </div>
               <div class="field">
                 <label class="field-label" for="pf-med">MEDEVAC-Callsign</label>
-                <input id="pf-med" class="input mono" type="text" placeholder="z. B. DUSTOFF 1">
+                <input id="pf-med" class="input mono" type="text" placeholder="z. B. SPIRIT 7-1">
               </div>
             </div>
             <div class="field-row">
@@ -302,7 +312,8 @@
       <!-- ===== REFERENZEN ===== -->
       <section class="view" id="view-refs">
         <h1>Referenzen</h1>
-        <p class="lead">Abkürzungen &amp; Brevity – wird aus deinen PDFs (24th&nbsp;STS, TFW&nbsp;18E, Ghost, ATG) befüllt.</p>
+        <p class="lead">Alles aus deinen Unit-Dokumenten: Brevity, Danger Close, Höhenblöcke, Airframes, Funk &amp; Verfahren.</p>
+        <div class="tabs" id="refs-tabs"></div>
         <div id="refs-root" class="refs-grid"></div>
       </section>
 
@@ -316,6 +327,8 @@
   <script src="js/data/refdata.js"></script>
   <script src="js/modules/grid.js"></script>
   <script src="js/modules/forms.js"></script>
+  <script src="js/modules/briefs.js"></script>
+  <script src="js/modules/workflow.js"></script>
   <script src="js/modules/timer.js"></script>
   <script src="js/modules/profiles.js"></script>
   <script src="js/modules/refs.js"></script>

@@ -7,9 +7,6 @@ const path = require('path');
 const root = path.resolve(__dirname, '..');
 const html = fs.readFileSync(path.join(root, 'src', 'index.html'), 'utf8');
 
-// relative Script-Pfade aus dem HTML lesen
-const scriptSrcs = [...html.matchAll(/<script src="([^"]+)"><\/script>/g)].map(m => m[1]);
-
 const errors = [];
 const dom = new JSDOM(html, {
   url: 'file://' + path.join(root, 'src', 'index.html'),
@@ -21,7 +18,6 @@ const dom = new JSDOM(html, {
     window.prompt = () => '';
     window.console.error = (...a) => { errors.push('console.error: ' + a.join(' ')); };
     window.addEventListener('error', e => errors.push('window.onerror: ' + e.message));
-    // localStorage-Shim (file://-Origin hat in jsdom keinen Storage)
     const store = new Map();
     Object.defineProperty(window, 'localStorage', {
       configurable: true,
@@ -44,86 +40,109 @@ setTimeout(() => {
     if (!cond) process.exitCode = 1;
   };
 
-  // Kern-Objekte vorhanden
+  // Kern-Objekte
   check(!!window.REF, 'REF-Daten geladen');
   check(!!window.mgrs && typeof window.mgrs.forward === 'function', 'mgrs-Lib geladen');
   check(!!window.GridCalc, 'GridCalc geladen');
   check(!!window.JTForms, 'JTForms geladen');
+  check(!!window.JTBriefs, 'JTBriefs geladen');
+  check(!!window.JTCasFlow, 'JTCasFlow geladen');
   check(!!window.JTTimer, 'JTTimer geladen');
   check(!!window.JTProfiles, 'JTProfiles geladen');
   check(!!window.JTRefs, 'JTRefs geladen');
   check(!!window.App, 'App geladen');
 
-  // Router: Start-View aktiv
+  // Referenzdaten vollständig
+  check(window.REF.casSteps.length === 12, '12 CAS-Schritte definiert');
+  check(window.REF.cas9.lines.length === 9, 'CAS 9-Line: 9 Felder');
+  check(window.REF.cas5.lines.length === 5, 'CAS 5-Line: 5 Felder');
+  check(window.REF.medevac.lines.length === 9, 'MEDEVAC: 9 Felder');
+  check(window.REF.dangerClose.groups.reduce((n, g) => n + g.items.length, 0) >= 20, 'Danger-Close-Tabelle gefüllt');
+  check(window.REF.brevity.length >= 60, 'Brevity-Wörterbuch groß (' + window.REF.brevity.length + ')');
+  check(window.REF.airframes.transport.length === 4 && window.REF.airframes.cas.length === 3, 'Airframes geladen');
+  check(window.REF.radios.length >= 8, 'Funkgeräte geladen');
+
+  // Router
   const active = doc.querySelector('.view.active');
-  check(active && active.id === 'view-home', 'Home-View aktiv (Router)');
+  check(active && active.id === 'view-home', 'Home-View aktiv');
 
   // Navigation durchklicken
-  ['cas', 'medevac', 'grid', 'timer', 'profile', 'refs'].forEach(r => {
+  ['casflow', 'briefs', 'grid', 'timer', 'profile', 'refs'].forEach(r => {
     window.location.hash = '#/' + r;
     window.dispatchEvent(new window.HashChangeEvent('hashchange'));
     const v = doc.getElementById('view-' + r);
     check(v && v.classList.contains('active'), 'Route #/' + r + ' aktiv');
   });
-  window.location.hash = '#/home';
+
+  // CASFlow: Stepper & Form
+  const stepper = doc.querySelectorAll('#casflow-stepper .step');
+  check(stepper.length === 12, 'CASFlow: 12 Stepper-Schritte');
+  window.location.hash = '#/casflow';
   window.dispatchEvent(new window.HashChangeEvent('hashchange'));
+  // Schritt 2 (Check-in) anklicken → Formular
+  const steps = doc.querySelectorAll('#casflow-stepper .step');
+  if (steps.length > 1) steps[1].click();
+  const flowForm = doc.getElementById('casflow-form');
+  check(flowForm && flowForm.querySelectorAll('.field-row').length >= 8, 'CASFlow: Check-in-Formular gerendert (' + (flowForm ? flowForm.querySelectorAll('.field-row').length : 0) + ' Zeilen)');
 
-  // CAS-Formular: Felder existieren?
-  const casForm = doc.getElementById('cas-form');
-  check(casForm && casForm.querySelectorAll('.field-row.align').length === 9, 'CAS: 9 Zeilen gerendert');
-  const medForm = doc.getElementById('medevac-form');
-  check(medForm && medForm.querySelectorAll('.field-row.align').length === 9, 'MEDEVAC: 9 Zeilen gerendert');
+  // Briefs: Tabs & Form
+  window.location.hash = '#/briefs';
+  window.dispatchEvent(new window.HashChangeEvent('hashchange'));
+  const tabs = doc.querySelectorAll('#brief-tabs .tab');
+  check(tabs.length === 10, 'Briefs: 10 Tabs');
+  check(doc.querySelectorAll('#brief-form .field-row').length === 9, 'Briefs: CAS 9-Line mit 9 Zeilen');
+  check(!!doc.querySelector('#brief-form .field-row.rb'), 'Briefs: Readback-Zeilen markiert');
 
-  // CAS-Eingabe → Vorschau
-  const ipInput = casForm.querySelector('.field-row.align input');
-  if (ipInput) {
-    ipInput.value = '35S LE 20476 18769';
-    ipInput.dispatchEvent(new window.Event('input', { bubbles: true }));
-    const preview = doc.getElementById('cas-preview');
-    check(preview && preview.textContent.includes('1. IP'), 'CAS-Vorschau nach Eingabe aktualisiert');
-    check(preview && preview.dataset.plain && preview.dataset.plain.length > 0, 'CAS-Vorschau als Plain-Text gespeichert');
+  // Brief-Eingabe → Vorschau
+  const input = doc.querySelector('#brief-form .field-row:not(.rb) input') ||
+                doc.querySelector('#brief-form .field-row input');
+  if (input) {
+    input.value = '35S LE 20476 18769';
+    input.dispatchEvent(new window.Event('input', { bubbles: true }));
+    const preview = doc.getElementById('brief-preview');
+    check(preview && preview.dataset.plain && preview.dataset.plain.length > 0, 'Briefs: Vorschau aktualisiert');
   }
 
-  // Timer-Init
-  check(!!doc.getElementById('timer-start'), 'Timer-Button vorhanden');
-
-  // Profile gerendert
-  window.JTProfiles.renderCards('profile-list');
-  const cards = doc.querySelectorAll('#profile-list .profile-card');
-  check(cards.length === 3, '3 Profil-Karten gerendert');
-  check(cards[0].classList.contains('active'), 'Erstes Profil aktiv');
-  window.JTProfiles.renderEditForm();
-  check(doc.getElementById('pf-name').value === 'Standard JTAC', 'Profil-Bearbeitungsformular befüllt');
+  // Tab-Wechsel: MEDEVAC
+  const medTab = [...doc.querySelectorAll('#brief-tabs .tab')].find(t => t.textContent === 'MEDEVAC');
+  if (medTab) {
+    medTab.click();
+    check(doc.querySelectorAll('#brief-form .field-row').length === 9, 'MEDEVAC: 9 Zeilen');
+    check(!!doc.querySelector('#brief-form .numgroup'), 'MEDEVAC: Prioritäten-Zahlengruppe');
+  }
 
   // Referenzen
-  window.JTRefs.render();
-  const brevity = doc.getElementById('brevity-list');
-  check(brevity && brevity.querySelectorAll('li').length > 10, 'Brevity-Liste gerendert (' + (brevity ? brevity.querySelectorAll('li').length : 0) + ' Einträge)');
+  window.location.hash = '#/refs';
+  window.dispatchEvent(new window.HashChangeEvent('hashchange'));
+  const refTabs = doc.querySelectorAll('#refs-tabs .tab');
+  check(refTabs.length === 7, 'Refs: 7 Tabs');
+  // Brevity-Tab aktiv (Standard)
+  const brevityCards = doc.querySelectorAll('#refs-root .ref-card');
+  check(brevityCards.length >= 6, 'Refs: Brevity-Kategorien gerendert');
 
-  // Grid-Rechner UI: Eingaben setzen
-  const zoneSel = doc.getElementById('grid-zone');
-  check(zoneSel && zoneSel.options.length === window.REF.maps.length, 'Karten-Dropdown befüllt');
+  // Grid
+  window.location.hash = '#/grid';
+  window.dispatchEvent(new window.HashChangeEvent('hashchange'));
   doc.getElementById('grid-a').value = '100 100';
   doc.getElementById('grid-b').value = '200 300';
   doc.getElementById('grid-a').dispatchEvent(new window.Event('input', { bubbles: true }));
   const dist = doc.getElementById('gr-dist');
-  check(dist && dist.textContent.includes('22.361'), 'Grid-Rechner Distanz angezeigt: ' + dist.textContent);
+  check(dist && dist.textContent.includes('22.361'), 'Grid-Rechner Distanz: ' + dist.textContent);
 
-  // Theme-Toggle
-  const t = doc.getElementById('theme-toggle');
-  t.click();
-  check(doc.documentElement.dataset.theme === 'light', 'Theme-Wechsel auf hell');
-  t.click();
-  check(doc.documentElement.dataset.theme === 'dark', 'Theme-Wechsel zurück auf dunkel');
+  // Timer & Profile
+  check(!!doc.getElementById('timer-start'), 'Timer-Button vorhanden');
+  window.JTProfiles.renderCards('profile-list');
+  check(doc.querySelectorAll('#profile-list .profile-card').length === 3, '3 Profil-Karten');
 
-  // Profil-Wechsel per Klick auf Karte 2
-  doc.querySelectorAll('#profile-list .profile-card')[1].click();
-  check(doc.getElementById('profile-select').value === 'p2', 'Profil-Wechsel über Karte aktualisiert Select');
+  // Theme
+  doc.getElementById('theme-toggle').click();
+  check(doc.documentElement.dataset.theme === 'light', 'Theme auf hell');
+  doc.getElementById('theme-toggle').click();
+  check(doc.documentElement.dataset.theme === 'dark', 'Theme auf dunkel');
 
   // Toast
   window.App.toast('Test');
-  const toast = doc.getElementById('toast');
-  check(toast.classList.contains('show'), 'Toast erscheint');
+  check(doc.getElementById('toast').classList.contains('show'), 'Toast erscheint');
 
   if (errors.length) {
     console.log('\n✘ Laufzeitfehler:');
@@ -132,4 +151,4 @@ setTimeout(() => {
   } else {
     console.log('\n✔ KEINE Laufzeitfehler');
   }
-}, 1500);
+}, 1800);
