@@ -110,6 +110,12 @@ setTimeout(() => {
   ok(text.includes('Target is BTR-42A'), 'Workflow: 5-Line Satz (Beschreibung)');
   ok(text.includes('REMARKS'), 'Workflow: Remarks enthalten');
   ok(text.includes('BDA'), 'Workflow: BDA enthalten');
+  // RadioEN: deutsche Eingaben werden im Funkspruch automatisch englisch
+  ok(text.includes('north-west'), 'RadioEN: „nordwestlich“ wird „north-west“');
+  ok(!text.includes('nordwestlich'), 'RadioEN: kein Deutsch mehr im Spruch (loc)');
+  ok(text.includes('destroyed'), 'RadioEN: „zerstört“ wird „destroyed“');
+  ok(text.includes('no fire'), 'RadioEN: „kein Feuer“ wird „no fire“');
+  ok(text.includes('GTL 045 active'), 'RadioEN: „aktiv“ wird „active“ (TEFACHR)');
 
   if (errors.length) { console.log('Laufzeitfehler:', errors); process.exitCode = 1; }
   else console.log('✔ KEINE FEHLER');

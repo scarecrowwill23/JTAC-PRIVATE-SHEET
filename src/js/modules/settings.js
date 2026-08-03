@@ -72,10 +72,11 @@
     // Tabs
     const tabs = document.createElement('div');
     tabs.className = 'tabs';
-    [['general', '⚙ Einstellungen'], ['channels', '📻 Channels (SR/LR)'], ['data', '🗄 Daten']].forEach(([id, label]) => {
+    [['general', '⚙ Einstellungen'], ['channels', '📻 Channels (SR/LR)'], ['data', '🗄 Daten'], ['update', '🔄 Update']].forEach(([id, label]) => {
       const b = document.createElement('button');
       b.className = 'tab' + (id === currentTab ? ' active' : '');
-      b.textContent = label;
+      b.textContent = labelFor(id, label);
+      b.dataset.tabId = id;
       b.addEventListener('click', () => { currentTab = id; render(rootEl); });
       tabs.appendChild(b);
     });
@@ -87,8 +88,30 @@
 
     if (currentTab === 'general') renderGeneral(body);
     else if (currentTab === 'channels') window.JTChannels.render(body);
+    else if (currentTab === 'update') { if (window.JTUpdate) window.JTUpdate.render(body); }
     else renderData(body);
   }
+
+  /** Tab-Beschriftung: markiert den Update-Tab, wenn was Neues da ist. */
+  function labelFor(id, base) {
+    if (id === 'update' && window.JTUpdate) {
+      const res = window.JTUpdate.getLast();
+      if (res && res.ok && res.updateAvailable) return base + ' 🟠 NEU';
+    }
+    return base;
+  }
+
+  /** Aktualisiert die Tab-Beschriftungen (z. B. nach einem Update-Check). */
+  function refreshTabLabels() {
+    document.querySelectorAll('#settings-root .tab[data-tab-id]').forEach(b => {
+      const id = b.dataset.tabId;
+      const base = { general: '⚙ Einstellungen', channels: '📻 Channels (SR/LR)', data: '🗄 Daten', update: '🔄 Update' }[id];
+      if (base) b.textContent = labelFor(id, base);
+    });
+  }
+
+  /** Öffnet einen bestimmten Einstellungs-Tab (wird z. B. vom Update-Banner genutzt). */
+  function openTab(id) { currentTab = id; }
 
   // ---------- Allgemein ----------
   function renderGeneral(root) {
@@ -275,5 +298,5 @@
   }
 
   window.JTData = Object.assign({}, JTData, { getCustom, setCustom });
-  window.JTSettings = { render, getSettings, setSettings, applyDefaultProfile };
+  window.JTSettings = { render, getSettings, setSettings, applyDefaultProfile, openTab, refreshTabLabels };
 })();

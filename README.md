@@ -24,7 +24,7 @@ keine Anmeldung, kein Server, keine Datenübertragung.
 | **➤ 12-Schritte-CAS** | Geführter Ablauf: Check-in → TEFACHR → Game Plan → Brief → Remarks → BDA, als durchgehender Funkspruch. |
 | **⌖ Grid-Rechner** | MGRS ↔ Lat/Long, Arma-Grids, Distanz & Peilung in Grad + Mil. „📌 In Brief einfügen" überträgt das Ergebnis direkt in die 5-/9-Line. |
 | **⏱ Timer / TOT** | Countdown mit automatischem Lase-Fenster (T–30 … T+30) + Piep-Alarmen. |
-| **☎ Profile** | Presets **GRANITE 10 / GRANITE 11 / FLEX** (ACRE-2-Channels, Laser 1111), Airframe-Auswahl mit Bewaffnungs-Details. |
+| **☎ Profile** | **Beliebig viele eigene Profile** – anlegen (Kopie), duplizieren, umbenennen, löschen. Alles frei änderbar: Callsigns, Funk (ACRE-2), Laser, Karte, Notizen. Werks-Presets **GRANITE 10 / GRANITE 11 / FLEX** jederzeit wiederherstellbar (eigene bleiben erhalten). Airframe-Auswahl mit Bewaffnungs-Details. |
 | **⚙ Einstellungen** | **Einstellungen** (Design, Standard-Profil, Standard-Karte) · **📻 Channels (SR/LR)** – eigene Short-/Long-Range-Kanäle anlegen (ACRE-2) · **🗄 Daten** – eigene Ziele, Ordnance, Lage-Begriffe und Callsigns eintragen (fließen überall ein). |
 | **▤ Referenzen** | Brevity (93 Begriffe, durchsuchbar), Danger Close, Höhen/Keyhole, Airframes, Funk, Verfahren + **📄 Original-PDFs zum Nachschlagen**. |
 | **⚡ Schnelligkeit** | Globale Suche (Brevity, Ziele, Favoriten, Missionen), Sidebar-Pins (Favoriten), Schnell-Buttons (CONTACT, CLEARED HOT, SHACK …), Standard-Sprüche, Auto-Fokus. |
@@ -47,6 +47,11 @@ Laser to target line 342
 **📤 Senden & ins Log** kopiert den Spruch, schreibt ihn in die Missions-Historie und zeigt dir
 die Readback-Zeilen zum Abhaken, wenn der Pilot bestätigt hat.
 
+**🗣 Auto-Übersetzer:** Du kannst in den Freitext-Feldern Deutsch tippen – die App übersetzt
+die gängigen Begriffe im Funkspruch automatisch ins Funk-Englisch. Aus
+`200 m westlich des Ziels` wird `200 m west of the target`, aus `grün Rauch` wird `green smoke`.
+(Früher gespeicherte deutsche Eingaben werden dabei mit repariert.)
+
 ## Starten (Entwicklung)
 
 ```bash
@@ -67,14 +72,35 @@ Testet Rechenlogik, UI (jsdom), Satz-Output und den kompletten Workflow inkl. Mi
 npm install
 npm run pack:win
 ```
-Ergebnis im Ordner `build/JTAC-Helper-win32-x64/` – die `JTAC-Helper.exe` starten, fertig.
+Ergebnis im Ordner `build/JTAC-Private-Sheet-win32-x64/` – die `JTAC-Private-Sheet.exe` starten, fertig.
 Die App braucht danach kein Internet mehr. Alle Daten liegen lokal im App-Profil-Ordner.
+
+## 🔄 App aktualisieren (ganz einfach – kann jeder)
+
+**Du musst nicht selbst nachgucken:** Die App prüft beim Start automatisch, ob es eine neue
+Version gibt. Wenn ja, erscheint auf der Startseite ein **großes oranges Schild** mit einer
+Anleitung (auch unter ⚙ Einstellungen → 🔄 Update).
+
+**Dann nur noch das hier:**
+
+1. **App zumachen.**
+2. **Doppelklick auf `UPDATE.bat`** (Windows) bzw. `./update.sh` (Mac/Linux) im App-Ordner.
+   Ein Fenster geht auf und macht **alles von allein**.
+3. **Warten, bis „FERTIG!" da steht** – App wieder starten. Fertig. 🎉
+
+> 😌 **Keine Angst um deine Daten:** Missionen, Profile, Checklisten und Einstellungen
+> bleiben beim Update erhalten – sie liegen getrennt von der App in deinem Benutzer-Profil.
+>
+> Plan B (wenn's klemmt): Auf der GitHub-Seite → grüner Knopf **„Code"** → **„Download ZIP"**
+> → auspacken → damit den alten App-Ordner ersetzen.
 
 ## Projektstruktur
 
 ```
-main.js              – Electron-Fenster (Main-Prozess)
-preload.js           – sichere Brücke (Clipboard, Titel)
+main.js              – Electron-Fenster (Main-Prozess) + Update-Check
+preload.js           – sichere Brücke (Clipboard, Titel, Update)
+UPDATE.bat           – Doppelklick = automatisches Update (Windows)
+update.sh            – dasselbe für Mac/Linux
 src/
   index.html         – Oberfläche
   css/styles.css     – Design (dunkel/hell)

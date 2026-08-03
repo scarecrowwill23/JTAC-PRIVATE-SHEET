@@ -167,7 +167,7 @@ setTimeout(() => {
   check(script.includes('Type 2 control'), 'Satz-Output: Type 2 control');
   check(script.includes('2 times'), 'Satz-Output: 2 times');
   check(script.includes('114 Kilo'), 'Satz-Output: 114 Kilo');
-  check(script.includes('Friendly position is 200 m westlich marked by smoke'), 'Satz-Output: Friendly-Satz');
+  check(script.includes('Friendly position is 200 m west marked by smoke') && !script.includes('westlich'), 'Satz-Output: Friendly-Satz (deutsch → englisch übersetzt)');
   check(script.includes('Target is on grid 0453 0976'), 'Satz-Output: Target-Grid-Satz');
   check(script.includes('Target is BTR-42A marked by laser'), 'Satz-Output: Target-Desc-Satz');
   check(script.includes('Laser to target line 342'), 'Satz-Output: LTL-Satz');
@@ -251,10 +251,15 @@ setTimeout(() => {
   docsTab.click();
   check(doc.querySelectorAll('.doc-card').length === 4, 'Refs: 4 Dokumente-Karten');
 
-  // Einstellungen: Tabs + Channels + Daten
+  // Einstellungen: Tabs + Channels + Daten + Update
   window.location.hash = '#/settings';
   window.dispatchEvent(new window.HashChangeEvent('hashchange'));
-  check(doc.querySelectorAll('#settings-root .tab').length === 3, 'Einstellungen: 3 Tabs');
+  check(doc.querySelectorAll('#settings-root .tab').length === 4, 'Einstellungen: 4 Tabs');
+  // Update-Tab rendert die Update-Seite (ohne App-Backend → nur Hinweis + Button)
+  const upTab = [...doc.querySelectorAll('#settings-root .tab')].find(t => t.textContent.includes('Update'));
+  check(!!upTab, 'Einstellungen: Update-Tab vorhanden');
+  upTab.click();
+  check(!!doc.querySelector('#update-check-btn'), 'Update-Seite: Prüfen-Button da');
   const chTab = [...doc.querySelectorAll('#settings-root .tab')].find(t => t.textContent.includes('Channels'));
   chTab.click();
   check(!!doc.querySelector('#settings-root .data-table'), 'Einstellungen: Channel-Tabelle');
@@ -270,13 +275,38 @@ setTimeout(() => {
   addBtn.click();
   check(window.JTData.getTargets().includes('T-14 Armata'), 'Eigenes Ziel hinzugefügt');
 
-  // Profile
+  // Profile (beliebig viele, komplett customizierbar)
   window.JTProfiles.renderCards('profile-list');
-  check(doc.querySelectorAll('#profile-list .profile-card').length === 3, '3 Profil-Karten');
+  check(doc.querySelectorAll('#profile-list .profile-card:not(.profile-card-add)').length === 3, '3 Preset-Profil-Karten');
   check(doc.querySelector('#profile-list .profile-card h3').textContent.includes('GRANITE 10'), 'Preset GRANITE 10');
+  check(!!doc.querySelector('#profile-list .profile-card-add'), '„+ Neues Profil“-Karte vorhanden');
   window.JTProfiles.renderEditForm();
   check(doc.getElementById('pf-freqcas').value === 'Ch. 2 TAD', 'Profil: Ch. 2 TAD');
   check(doc.getElementById('pf-laser').value === '1111', 'Profil: Laser 1111');
+
+  // Neues Profil anlegen → 4
+  const np = window.JTProfiles.create();
+  check(!!np && window.JTProfiles.getProfiles().length === 4, 'Neues Profil angelegt (jetzt 4)');
+  check(window.JTProfiles.getActive().id === np.id, 'Neues Profil direkt aktiv');
+  // Customizen (eigener Name + Callsign)
+  window.JTProfiles.update(np.id, { name: 'EIGENER JTAC', jtac: 'EIGENER JTAC', laser: '1688' });
+  check(window.JTProfiles.getProfiles().find(x => x.id === np.id).laser === '1688', 'Profil customized (Name, Laser)');
+  // Duplizieren → 5
+  const dp = window.JTProfiles.duplicate(window.JTProfiles.getProfiles()[0].id);
+  check(!!dp && window.JTProfiles.getProfiles().length === 5, 'Profil dupliziert (jetzt 5)');
+  // Löschen → 4
+  check(window.JTProfiles.remove(dp.id) === 'ok' && window.JTProfiles.getProfiles().length === 4, 'Profil gelöscht (wieder 4)');
+  // Löschen bis nur noch das eigene Profil übrig ist; letztes ist geschützt
+  window.JTProfiles.remove('p1');
+  window.JTProfiles.remove('p2');
+  window.JTProfiles.remove('p3');
+  check(window.JTProfiles.getProfiles().length === 1 && window.JTProfiles.getProfiles()[0].name === 'EIGENER JTAC', 'Löschen bis auf das eigene Profil');
+  check(window.JTProfiles.remove(np.id) === 'last', 'Letztes Profil kann nicht gelöscht werden');
+  // Presets wiederherstellen ergänzt fehlende (kein Datenverlust)
+  const added = window.JTProfiles.restorePresets();
+  check(added === 3 && window.JTProfiles.getProfiles().length === 4, 'Presets wiederhergestellt (3 ergänzt)');
+  check(window.JTProfiles.getProfiles().some(x => x.name === 'EIGENER JTAC'), 'Eigenes Profil bleibt erhalten');
+  check(window.JTProfiles.restorePresets() === 0, 'Presets-Wiederherstellung ohne Duplikate');
 
   // Suche
   doc.getElementById('global-search').value = 'lase';

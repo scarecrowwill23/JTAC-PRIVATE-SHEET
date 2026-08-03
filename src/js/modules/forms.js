@@ -204,18 +204,21 @@
   /**
    * Vorlesbaren Funkspruch bauen (Satz-Output).
    * def: Format-Definition; values: {lineKey: wert, pilot?}; ctx: {profile}
+   * Deutsche Begriffe in Freitext-Feldern werden automatisch ins
+   * Funk-Englisch übersetzt (RadioEN).
    */
   function buildScript(def, values, ctx) {
     const profile = (ctx && ctx.profile) || {};
     const pilot = (values && values.pilot) || profile.cas || 'Pilot';
     const jtac = profile.jtac || 'JTAC';
+    const en = (s) => (window.RadioEN ? window.RadioEN.radioEN(s) : s);
     const lines = [];
 
     def.lines.forEach(ld => {
       const v = values ? values[ld.key] : undefined;
       if (v === undefined || v === null) return;
       const sentence = ld.sent ? ld.sent(v, { all: values, profile, pilot, jtac }) : null;
-      if (sentence && String(sentence).trim()) lines.push(String(sentence).trim());
+      if (sentence && String(sentence).trim()) lines.push(en(String(sentence).trim()));
     });
 
     if (!lines.length) return '';

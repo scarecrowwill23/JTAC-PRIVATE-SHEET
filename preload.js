@@ -11,5 +11,11 @@ contextBridge.exposeInMainWorld('jtacAPI', {
   /** App-Version (aus package.json). */
   version: () => ipcRenderer.invoke('app-version'),
 
+  /** Prüft auf GitHub, ob es eine neuere Version gibt. */
+  checkUpdate: () => ipcRenderer.invoke('check-update'),
+
+  /** Öffnet die Update-Seite (GitHub) im normalen Browser. */
+  openUpdatePage: () => ipcRenderer.invoke('open-update-page'),
+
   platform: process.platform
 });

@@ -1,6 +1,6 @@
 {
   "name": "jtac-helper",
-  "version": "0.9.0",
+  "version": "1.1.0",
   "description": "JTAC Helper – private Desktop-App für Arma 3 (CGF 160th SOAR)",
   "main": "main.js",
   "author": "Private",
@@ -8,8 +8,8 @@
   "private": true,
   "scripts": {
     "start": "electron .",
-    "test": "node test/logic.test.js && node test/smoke.test.js && node test/flow.test.js",
-    "pack:win": "electron-packager . \"JTAC-Private-Sheet\" --platform=win32 --arch=x64 --out=build --overwrite --prune=true --ignore=\"^/build\" --ignore=\"^/test\" --app-version=0.1.0"
+    "test": "node test/logic.test.js && node test/version.test.js && node test/radio.test.js && node test/smoke.test.js && node test/flow.test.js",
+    "pack:win": "electron-packager . \"JTAC-Private-Sheet\" --platform=win32 --arch=x64 --out=build --overwrite --prune=true --ignore=\"^/build\" --ignore=\"^/test\""
   },
   "devDependencies": {
     "electron": "^43.2.0",

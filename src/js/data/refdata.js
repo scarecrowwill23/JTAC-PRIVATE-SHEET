@@ -90,7 +90,7 @@ const REF = {
         } },
       { n: 2, key: 'friendly', short: 'Friend', label: 'Friendly Location / Mark', rb: true,
         fields: [
-          { key: 'loc', type: 'text', label: 'Lage', ph: 'z. B. 200 m westlich des Ziels' },
+          { key: 'loc', type: 'text', label: 'Lage', ph: 'z. B. 200 m west of the target' },
           { key: 'mark', type: 'select', label: 'Mark', options: [
             { v: 'smoke', t: 'Smoke' }, { v: 'IR strobe', t: 'IR Strobe' }, { v: 'laser', t: 'Laser' },
             { v: 'IR pointer', t: 'IR Pointer' }, { v: 'panel', t: 'Panel' }, { v: 'no mark', t: 'No Mark' } ] }
@@ -161,7 +161,7 @@ const REF = {
         fields: [{ key: 'cp', type: 'text', label: 'IP/BP/Keyhole', ph: 'z. B. IP Alpha', mono: true }],
         sent: (v) => v.cp ? `Control point is ${v.cp}` : null },
       { n: 2, key: 'dir', short: 'Dir', label: 'Target Direction & Offset', rb: false,
-        fields: [{ key: 'dir', type: 'text', label: 'Richtung', ph: 'z. B. 280° / rechts 500 m', mono: true }],
+        fields: [{ key: 'dir', type: 'text', label: 'Richtung', ph: 'z. B. 280° / right 500 m', mono: true }],
         sent: (v) => v.dir ? `Target direction ${v.dir}` : null },
       { n: 3, key: 'dist', short: 'Dist', label: 'Target Distance', rb: false,
         fields: [{ key: 'dist', type: 'text', label: 'Distanz', ph: 'z. B. 8 km', mono: true }],
@@ -170,7 +170,7 @@ const REF = {
         fields: [{ key: 'elev', type: 'text', label: 'Höhe', ph: 'z. B. 120 m MSL', mono: true }],
         sent: (v) => v.elev ? `Target elevation ${v.elev}` : null },
       { n: 5, key: 'desc', short: 'DESC', label: 'Target Description', rb: false,
-        fields: [{ key: 'desc', type: 'text', label: 'Beschreibung', ph: 'z. B. T-90, Kompanie', list: 'target-list' }],
+        fields: [{ key: 'desc', type: 'text', label: 'Beschreibung', ph: 'z. B. T-90, company size', list: 'target-list' }],
         sent: (v) => v.desc ? `Target is ${v.desc}` : null },
       { n: 6, key: 'grid', short: 'GRID', label: 'Target Coordinates', rb: true,
         fields: [{ key: 'grid', type: 'text', label: 'Grid', ph: 'z. B. 35S LE 20476 18769', mono: true }],
@@ -179,10 +179,10 @@ const REF = {
         fields: [{ key: 'mark', type: 'text', label: 'Mark', ph: 'z. B. Lase 1688', list: 'mark-list', mono: true }],
         sent: (v) => v.mark ? `Marked by ${v.mark}` : null },
       { n: 8, key: 'friend', short: 'Friend', label: 'Friendly Position', rb: true,
-        fields: [{ key: 'friend', type: 'text', label: 'Eigene Kräfte', ph: 'z. B. 200 m südlich, kein Kontakt', mono: true }],
+        fields: [{ key: 'friend', type: 'text', label: 'Eigene Kräfte', ph: 'z. B. 200 m south, no contact', mono: true }],
         sent: (v) => v.friend ? `Friendlies are ${v.friend}` : null },
       { n: 9, key: 'egress', short: 'Egress', label: 'Egress & Routing', rb: false,
-        fields: [{ key: 'egress', type: 'text', label: 'Egress', ph: 'z. B. Egress Nord, dann HA Alpha', mono: true }],
+        fields: [{ key: 'egress', type: 'text', label: 'Egress', ph: 'z. B. egress north, then HA Alpha', mono: true }],
         sent: (v) => v.egress ? `Egress ${v.egress}` : null }
     ]
   },
@@ -247,8 +247,8 @@ const REF = {
         sent: (v) => v.nat ? `Patient nationality ${v.nat}` : null },
       { n: 9, key: 'cbrn', short: 'CBRN', label: 'Patient CBRN Status',
         fields: [{ key: 'cbrn', type: 'select', label: 'CBRN', options: [
-          { v: 'N', t: 'N – Nuclear' }, { v: 'B', t: 'B – Biological' }, { v: 'C', t: 'C – Chemical' }, { v: 'keine', t: 'Keine' } ] }],
-        sent: (v) => v.cbrn && v.cbrn !== 'keine' ? `CBRN status ${v.cbrn}` : null }
+          { v: 'N', t: 'N – Nuclear' }, { v: 'B', t: 'B – Biological' }, { v: 'C', t: 'C – Chemical' }, { v: 'none', t: 'None' } ] }],
+        sent: (v) => v.cbrn && v.cbrn !== 'keine' && v.cbrn !== 'none' ? `CBRN status ${v.cbrn}` : null }
     ]
   },
 
@@ -272,10 +272,10 @@ const REF = {
           { v: 'other', t: 'Other' }, { v: 'none', t: 'None' } ] }],
         sent: (v) => v.mark ? `Marked by ${v.mark}` : null },
       { n: 3, key: 'obstacles', short: 'Obs', label: 'Obstacles / Hazards',
-        fields: [{ key: 'obstacles', type: 'text', label: 'Hindernisse', ph: 'z. B. Hochspannung 100 m westlich' }],
+        fields: [{ key: 'obstacles', type: 'text', label: 'Hindernisse', ph: 'z. B. power lines 100 m west' }],
         sent: (v) => v.obstacles ? `Obstacles: ${v.obstacles}` : null },
       { n: 4, key: 'friendly', short: 'Friend', label: 'Friendly SITREP',
-        fields: [{ key: 'friendly', type: 'text', label: 'Eigene Lage', ph: 'z. B. 12 PAX, 2 EPW, 100 m nordöstlich' }],
+        fields: [{ key: 'friendly', type: 'text', label: 'Eigene Lage', ph: 'z. B. 12 PAX, 2 EPW, 100 m north-east' }],
         sent: (v) => v.friendly ? `Friendly sitrep: ${v.friendly}` : null },
       { n: 5, key: 'enemy', short: 'Enemy', label: 'HLZ Security',
         fields: [{ key: 'enemy', type: 'select', label: 'Sicherheit', options: [
@@ -283,7 +283,7 @@ const REF = {
           { v: 'red', t: 'Red – enemy IVO HLZ' } ] }],
         sent: (v) => v.enemy ? `Security is ${v.enemy}` : null },
       { n: 6, key: 'remarks', short: 'Rmks', label: 'Remarks & Restrictions', rb: true,
-        fields: [{ key: 'remarks', type: 'text', label: 'Hinweise', ph: 'z. B. Final approach heading 010, Ziel nach Pickup' }],
+        fields: [{ key: 'remarks', type: 'text', label: 'Hinweise', ph: 'z. B. Final approach heading 010, pickup then to target' }],
         sent: (v) => v.remarks ? `${v.remarks}` : null }
     ]
   },
@@ -301,7 +301,7 @@ const REF = {
         fields: [{ key: 'warno', type: 'text', label: 'Warno', ph: 'z. B. GHOSTRIDER 1-1, LONGBOW 1, Fire Mission' }],
         sent: (v) => v.warno ? v.warno : null },
       { n: 2, key: 'friendly', short: 'Friend', label: 'Friendly Location & Marker',
-        fields: [{ key: 'friendly', type: 'text', label: 'Eigene Lage', ph: 'z. B. 200 m nordwestlich, IR-Strobe' }],
+        fields: [{ key: 'friendly', type: 'text', label: 'Eigene Lage', ph: 'z. B. 200 m north-west, IR strobe' }],
         sent: (v) => v.friendly ? `Friendly position is ${v.friendly}` : null },
       { n: 3, key: 'target', short: 'Target', label: 'Target Location', rb: true,
         fields: [{ key: 'target', type: 'text', label: 'Grid', ph: 'z. B. 0453 0976', mono: true }],
@@ -334,7 +334,7 @@ const REF = {
         fields: [{ key: 'elev', type: 'text', label: 'Höhe', ph: 'z. B. 95 m MSL', mono: true }],
         sent: (v) => v.elev ? `Target elevation ${v.elev}` : null },
       { n: 4, key: 'friendly', short: 'Friend', label: 'Closest Friendlies',
-        fields: [{ key: 'friendly', type: 'text', label: 'Eigene Kräfte', ph: 'z. B. 400 m südlich, kein Mark' }],
+        fields: [{ key: 'friendly', type: 'text', label: 'Eigene Kräfte', ph: 'z. B. 400 m south, no mark' }],
         sent: (v) => v.friendly ? `Friendlies are ${v.friendly}` : null },
       { n: 5, key: 'remarks', short: 'Rmks', label: 'Remarks & Restrictions', rb: true,
         fields: [{ key: 'remarks', type: 'text', label: 'Hinweise', ph: 'z. B. Danger close 280 m, FAH 090' }],
@@ -375,7 +375,7 @@ const REF = {
           { v: 'IR', t: 'IR' }, { v: 'other', t: 'Other' }, { v: 'none', t: 'None' } ] }],
         sent: (v) => v.mark ? `Marked by ${v.mark}` : null },
       { n: 7, key: 'weather', short: 'Wx', label: 'Weather',
-        fields: [{ key: 'weather', type: 'text', label: 'Wetter', ph: 'z. B. 3 km Sicht, Wind 270/12' }],
+        fields: [{ key: 'weather', type: 'text', label: 'Wetter', ph: 'z. B. visibility 3 km, wind 270/12' }],
         sent: (v) => v.weather ? `Weather: ${v.weather}` : null },
       { n: 8, key: 'enemy', short: 'Enemy', label: 'ALZ Security',
         fields: [{ key: 'enemy', type: 'select', label: 'Sicherheit', options: [
@@ -407,10 +407,10 @@ const REF = {
         fields: [{ key: 'heading', type: 'text', label: 'Kurs', ph: 'z. B. 090', mono: true }],
         sent: (v) => v.heading ? `Final approach heading ${v.heading}` : null },
       { n: 4, key: 'desc', short: 'DESC', label: 'POI Description & Marker',
-        fields: [{ key: 'desc', type: 'text', label: 'Beschreibung/Mark', ph: 'z. B. Panel, offene Fläche' }],
+        fields: [{ key: 'desc', type: 'text', label: 'Beschreibung/Mark', ph: 'z. B. panel, open area' }],
         sent: (v) => v.desc ? `POI is ${v.desc}` : null },
       { n: 5, key: 'friendly', short: 'Friend', label: 'Friendly Location',
-        fields: [{ key: 'friendly', type: 'text', label: 'Eigene Kräfte', ph: 'z. B. 500 m östlich, kein Mark' }],
+        fields: [{ key: 'friendly', type: 'text', label: 'Eigene Kräfte', ph: 'z. B. 500 m east, no mark' }],
         sent: (v) => v.friendly ? `Friendlies are ${v.friendly}` : null },
       { n: 6, key: 'winds', short: 'Winds', label: 'Surface Winds',
         fields: [{ key: 'winds', type: 'text', label: 'Wind', ph: 'z. B. 240/12 kts' }],
@@ -442,10 +442,10 @@ const REF = {
         fields: [{ key: 'target', type: 'text', label: 'Grid', ph: 'z. B. 0453 0976', mono: true }],
         sent: (v) => v.target ? `Target is on grid ${v.target}` : null },
       { n: 4, key: 'desc', short: 'DESC', label: 'Target Description',
-        fields: [{ key: 'desc', type: 'text', label: 'Ziel', ph: 'z. B. 3 technicals, gedeckt' }],
+        fields: [{ key: 'desc', type: 'text', label: 'Ziel', ph: 'z. B. 3 technicals, under cover' }],
         sent: (v) => v.desc ? `Target is ${v.desc}` : null },
       { n: 5, key: 'moe', short: 'MOE', label: 'Method of Engagement',
-        fields: [{ key: 'moe', type: 'text', label: 'Engagement', ph: 'z. B. Precision Fire, High, HE VT, 6 Runden' }],
+        fields: [{ key: 'moe', type: 'text', label: 'Engagement', ph: 'z. B. precision fire, high, HE VT, 6 rounds' }],
         sent: (v) => v.moe ? `Method of engagement ${v.moe}` : null },
       { n: 6, key: 'mfc', short: 'MFC', label: 'Method of Fire Control',
         fields: [{ key: 'mfc', type: 'text', label: 'Feuerkontrolle', ph: 'z. B. At my command' }],
@@ -466,16 +466,16 @@ const REF = {
         fields: [{ key: 'observer', type: 'text', label: 'Observer', ph: 'z. B. FOX 2-1, Type 2, BOC' }],
         sent: (v) => v.observer ? v.observer : null },
       { n: 2, key: 'friendly', short: 'Friend', label: 'Friendly Location', rb: true,
-        fields: [{ key: 'friendly', type: 'text', label: 'Eigene Lage', ph: 'z. B. 250 m nördlich des Ziels' }],
+        fields: [{ key: 'friendly', type: 'text', label: 'Eigene Lage', ph: 'z. B. 250 m north of the target' }],
         sent: (v) => v.friendly ? `Friendly position is ${v.friendly}` : null },
       { n: 3, key: 'target', short: 'Target', label: 'Target Location', rb: true,
         fields: [{ key: 'target', type: 'text', label: 'Grid', ph: 'z. B. 0453 0976', mono: true }],
         sent: (v) => v.target ? `Target is on grid ${v.target}` : null },
       { n: 4, key: 'desc', short: 'DESC', label: 'Target Description',
-        fields: [{ key: 'desc', type: 'text', label: 'Ziel', ph: 'z. B. T-72 im Hangar' }],
+        fields: [{ key: 'desc', type: 'text', label: 'Ziel', ph: 'z. B. T-72 in the hangar' }],
         sent: (v) => v.desc ? `Target is ${v.desc}` : null },
       { n: 5, key: 'mark', short: 'Mark', label: 'Target Marker',
-        fields: [{ key: 'mark', type: 'text', label: 'Mark', ph: 'z. B. grün Rauch / Lase 1212' }],
+        fields: [{ key: 'mark', type: 'text', label: 'Mark', ph: 'z. B. green smoke / lase 1212' }],
         sent: (v) => v.mark ? `Marked by ${v.mark}` : null }
     ]
   },
@@ -495,13 +495,13 @@ const REF = {
   ],
 
   tefachrFields: [
-    { key: 'threat',   label: 'Threat', ph: 'z. B. AAA bei Grid 123 456, MANPADS möglich' },
-    { key: 'enemy',    label: 'Enemy Situation', ph: 'z. B. Zug Stärke, 3 BTR, Richtung Nord' },
-    { key: 'friendly', label: 'Friendly Update', ph: 'z. B. 1. Zug hält Linie, Vorstoß nach Osten' },
-    { key: 'artillery',label: 'Artillery', ph: 'z. B. 2x M119, GTL 045° aktiv' },
-    { key: 'clearance',label: 'Clearance Authority', ph: 'z. B. Cdr. Miller (JM), Initialen "JM"' },
-    { key: 'hazards',  label: 'Hazards', ph: 'z. B. Türme, Min Safe Alt 3000 ft, CBRN möglich' },
-    { key: 'remarks',  label: 'Remarks & Restrictions', ph: 'z. B. CAS-Absicht, Restriktionen, ACM/FSCM-Änderungen' }
+    { key: 'threat',   label: 'Threat', ph: 'z. B. AAA at grid 123 456, MANPADS possible' },
+    { key: 'enemy',    label: 'Enemy Situation', ph: 'z. B. platoon size, 3 BTR, heading north' },
+    { key: 'friendly', label: 'Friendly Update', ph: 'z. B. 1st platoon holding line, advancing east' },
+    { key: 'artillery',label: 'Artillery', ph: 'z. B. 2x M119, GTL 045° active' },
+    { key: 'clearance',label: 'Clearance Authority', ph: 'z. B. Cdr. Miller (JM), initials "JM"' },
+    { key: 'hazards',  label: 'Hazards', ph: 'z. B. towers, min safe alt 3000 ft, CBRN possible' },
+    { key: 'remarks',  label: 'Remarks & Restrictions', ph: 'z. B. CAS intent, restrictions, ACM/FSCM changes' }
   ],
 
   gameplanFields: [
@@ -514,19 +514,19 @@ const REF = {
       { v: 'BOT', t: 'BOT – Bomb On Target (Pilot sieht Ziel, 6-stellig genügt)' },
       { v: 'BOC', t: 'BOC – Bomb On Coordinate (8–10-stelliges Grid, GPS-Waffen)' }
     ]},
-    { key: 'ordnance', label: 'Ordnance / Desired Effect', ph: 'z. B. GBU-12, Zerstörung' },
+    { key: 'ordnance', label: 'Ordnance / Desired Effect', ph: 'z. B. GBU-12, destruction' },
     { key: 'interval', label: 'Interval', ph: 'z. B. 5 s / Salve' }
   ],
 
   remarksFields: [
     { key: 'fah',     label: 'Final Attack Heading', ph: 'z. B. 010 (immer 3-stellig)' },
     { key: 'ltlptl',  label: 'LTL / PTL', ph: 'z. B. LTL 320°' },
-    { key: 'threats', label: 'Threats & SEAD', ph: 'z. B. ZSU-23 bei 123 456, SEAD aktiv' },
-    { key: 'aca',     label: 'Airspace Coordination Areas', ph: 'z. B. ACA Nord frei' },
-    { key: 'dangerclose', label: 'Danger Close + Initialen', ph: 'z. B. DC 270 m, Initialen JM' },
+    { key: 'threats', label: 'Threats & SEAD', ph: 'z. B. ZSU-23 at 123 456, SEAD active' },
+    { key: 'aca',     label: 'Airspace Coordination Areas', ph: 'z. B. ACA north clear' },
+    { key: 'dangerclose', label: 'Danger Close + Initialen', ph: 'z. B. DC 270 m, initials JM' },
     { key: 'tot',     label: 'TOT / TTT', ph: 'z. B. TOT 16:00 Zulu' },
-    { key: 'abort',   label: 'Post-Launch Abort Restrictions', ph: 'z. B. keine' },
-    { key: 'weapons', label: 'Desired Ordnance / Effects', ph: 'z. B. nur Guns' }
+    { key: 'abort',   label: 'Post-Launch Abort Restrictions', ph: 'z. B. none' },
+    { key: 'weapons', label: 'Desired Ordnance / Effects', ph: 'z. B. guns only' }
   ],
 
   bdaFields: [
